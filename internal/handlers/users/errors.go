@@ -1,7 +1,7 @@
 package users
 
 import (
-	public "github.com/iuliailies/photo-flux/pck/photoflux"
+	public "github.com/iuliailies/photo-flux/pkg/photoflux"
 )
 
 func CreateUserError(status int, detail string) public.Error {

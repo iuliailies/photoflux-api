@@ -2,7 +2,7 @@ package common
 
 import (
 	"github.com/gin-gonic/gin"
-	public "github.com/iuliailies/photo-flux/pck/photoflux"
+	public "github.com/iuliailies/photo-flux/pkg/photoflux"
 )
 
 // EmitError sends an error response back to the client.

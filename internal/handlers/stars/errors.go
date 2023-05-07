@@ -1,7 +1,7 @@
 package stars
 
 import (
-	public "github.com/iuliailies/photo-flux/pck/photoflux"
+	public "github.com/iuliailies/photo-flux/pkg/photoflux"
 )
 
 func StarPhotoError(status int, detail string) public.Error {

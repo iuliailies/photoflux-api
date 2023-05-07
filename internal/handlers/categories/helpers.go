@@ -5,7 +5,7 @@ import (
 
 	"github.com/iuliailies/photo-flux/internal/config"
 	model "github.com/iuliailies/photo-flux/internal/models"
-	public "github.com/iuliailies/photo-flux/pck/photoflux"
+	public "github.com/iuliailies/photo-flux/pkg/photoflux"
 )
 
 func CategoryToPublicListItem(category model.Category, apipath config.ApiPaths) public.CategoryListItemData {

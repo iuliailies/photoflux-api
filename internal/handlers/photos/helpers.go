@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/iuliailies/photo-flux/internal/config"
 	model "github.com/iuliailies/photo-flux/internal/models"
-	public "github.com/iuliailies/photo-flux/pck/photoflux"
+	public "github.com/iuliailies/photo-flux/pkg/photoflux"
 )
 
 func PhotoToPublic(photo model.PhotoWithStars, apipath config.ApiPaths) public.PhotoData {

@@ -5,7 +5,7 @@ import (
 
 	"github.com/iuliailies/photo-flux/internal/config"
 	model "github.com/iuliailies/photo-flux/internal/models"
-	public "github.com/iuliailies/photo-flux/pck/photoflux"
+	public "github.com/iuliailies/photo-flux/pkg/photoflux"
 )
 
 func UserToPublic(user model.User, apipath config.ApiPaths, runningTotal float32) public.UserData {

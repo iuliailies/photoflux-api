@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/iuliailies/photo-flux/internal/handlers/common"
 	model "github.com/iuliailies/photo-flux/internal/models"
-	public "github.com/iuliailies/photo-flux/pck/photoflux"
+	public "github.com/iuliailies/photo-flux/pkg/photoflux"
 	"gorm.io/gorm/clause"
 )
 
