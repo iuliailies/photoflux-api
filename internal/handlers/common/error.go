@@ -7,7 +7,7 @@ import (
 
 // EmitError sends an error response back to the client.
 func EmitError(ctx *gin.Context, err public.Error) {
-	ctx.JSON(err.Status, public.ErrorResponse{
+	ctx.AbortWithStatusJSON(err.Status, public.ErrorResponse{
 		Error: err,
 	})
 }

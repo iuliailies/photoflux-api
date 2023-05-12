@@ -12,7 +12,7 @@ type PhotoHandler interface {
 }
 
 type UserHandler interface {
-	HandleCreateUser(ctx *gin.Context)
+	HandleGetUser(ctx *gin.Context)
 }
 
 type CategoryHandler interface {
@@ -22,4 +22,12 @@ type CategoryHandler interface {
 type StarHandler interface {
 	HandleStarPhoto(ctx *gin.Context)
 	HandleIsPhotoStarred(ctx *gin.Context)
+}
+
+type AuthHandler interface {
+	HandleLogin(ctx *gin.Context)
+	HandleRegister(ctx *gin.Context)
+	HandleRefresh(ctx *gin.Context)
+	HandleLogout(ctx *gin.Context)
+	HandleMinioAuth(ctx *gin.Context)
 }

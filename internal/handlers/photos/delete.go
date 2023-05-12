@@ -13,6 +13,10 @@ import (
 )
 
 func (h *handler) HandleDeletePhoto(ctx *gin.Context) {
+	_, ok := common.GetAuthHeader(ctx)
+	if !ok {
+		return
+	}
 
 	id := ctx.Param("id")
 	uuid, err := uuid.Parse(id)

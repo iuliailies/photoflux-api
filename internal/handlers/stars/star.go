@@ -12,8 +12,13 @@ import (
 )
 
 func (h *handler) HandleStarPhoto(ctx *gin.Context) {
+	ah, ok := common.GetAuthHeader(ctx)
+	if !ok {
+		return
+	}
+
 	var req public.StarRequest
-	err := ctx.BindJSON(&req)
+	err := ctx.ShouldBindJSON(&req)
 
 	if err != nil {
 		common.EmitError(ctx, StarPhotoError(
@@ -24,7 +29,7 @@ func (h *handler) HandleStarPhoto(ctx *gin.Context) {
 
 	Star := model.Star{
 		PhotoId: req.PhotoId,
-		UserId:  req.UserId,
+		UserId:  ah.User,
 	}
 	isStar := false
 	res := h.db.WithContext(ctx).Clauses(clause.Returning{}).Table("stars").

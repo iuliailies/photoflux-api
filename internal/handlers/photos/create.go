@@ -19,8 +19,13 @@ type PhotoCategory struct {
 }
 
 func (h *handler) HandleCreatePhoto(ctx *gin.Context) {
+	ah, ok := common.GetAuthHeader(ctx)
+	if !ok {
+		return
+	}
+
 	var req public.CreatePhotoRequest
-	err := ctx.BindJSON(&req)
+	err := ctx.ShouldBindJSON(&req)
 
 	if err != nil {
 		common.EmitError(ctx, CreatePhotoError(
@@ -37,8 +42,7 @@ func (h *handler) HandleCreatePhoto(ctx *gin.Context) {
 	}
 
 	Photo := model.Photo{
-		Link:   req.Link,
-		UserId: req.UserId,
+		UserId: ah.User,
 	}
 
 	v := validator.New()

@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS users
 (
     id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
     name text NOT NULL,
-    email text UNIQUE NOT NULL,
+    email text UNIQUE NOT NULL, -- ????? unique not working
     password text NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL
@@ -21,7 +21,6 @@ CREATE TABLE IF NOT EXISTS categories
 CREATE TABLE IF NOT EXISTS photos
 (
     id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-    link text,
     is_uploaded boolean,
     user_id uuid,
     created_at TIMESTAMPTZ NOT NULL,
@@ -56,3 +55,13 @@ CREATE TABLE IF NOT EXISTS stars
         REFERENCES users (id) MATCH SIMPLE
         ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS refresh_tokens
+(
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    token_id uuid NOT NULL,
+    user_id uuid NOT NULL,
+    CONSTRAINT "FK_user" FOREIGN KEY (user_id)
+        REFERENCES users (id) MATCH SIMPLE
+        ON DELETE CASCADE
+)

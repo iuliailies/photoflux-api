@@ -10,9 +10,8 @@ type UserData struct {
 }
 
 type UserAttributes struct {
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
 	Timestamps
 }
 
@@ -27,5 +26,15 @@ type CreateUserRequest struct {
 }
 
 type CreateUserResponse struct {
+	Data UserData `json:"data"`
+}
+
+type GetUserRequest struct {
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type GetUserResponse struct {
 	Data UserData `json:"data"`
 }

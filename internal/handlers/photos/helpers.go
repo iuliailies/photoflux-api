@@ -16,7 +16,6 @@ func PhotoToPublic(photo model.PhotoWithStars, apipath config.ApiPaths) public.P
 			Type: public.PhotoType,
 		},
 		Attributes: public.PhotoAttributes{
-			Link:       photo.Link,
 			IsUploaded: false,
 			UserId:     photo.UserId,
 			Timestamps: public.Timestamps{
@@ -48,7 +47,6 @@ func PhotoWithRelationshipToPublic(photo model.PhotoWithStars, apipath config.Ap
 			Type: public.PhotoType,
 		},
 		Attributes: public.PhotoAttributes{
-			Link:       photo.Link,
 			IsUploaded: false,
 			UserId:     photo.UserId,
 			Timestamps: public.Timestamps{
@@ -80,7 +78,6 @@ func PhotoToPublicListItem(photo model.PhotoWithStars, apipath config.ApiPaths) 
 			Type: public.PhotoType,
 		},
 		Attributes: public.PhotoAttributes{
-			Link:       photo.Link,
 			IsUploaded: false,
 			UserId:     photo.UserId,
 			Timestamps: public.Timestamps{

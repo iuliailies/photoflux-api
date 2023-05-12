@@ -11,3 +11,11 @@ func CreateUserError(status int, detail string) public.Error {
 		Detail: detail,
 	}
 }
+
+func GetUserError(status int, detail string) public.Error {
+	return public.Error{
+		Title:  "Get User Failed",
+		Status: status,
+		Detail: detail,
+	}
+}

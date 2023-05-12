@@ -11,13 +11,17 @@ import (
 )
 
 func (h *handler) HandleListPhoto(ctx *gin.Context) {
+	_, ok := common.GetAuthHeader(ctx)
+	if !ok {
+		return
+	}
 
 	var params public.ListPhotoParams
-	err := ctx.BindQuery(&params)
+	err := ctx.ShouldBindQuery(&params)
 
 	if err != nil {
 		common.EmitError(ctx, ListPhotoError(
-			http.StatusInternalServerError,
+			http.StatusBadRequest,
 			fmt.Sprintf("Could not bind query params: %s", err.Error())))
 		return
 	}

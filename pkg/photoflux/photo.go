@@ -22,7 +22,6 @@ type PhotoListItemData struct {
 }
 
 type PhotoAttributes struct {
-	Link       string    `json:"link"`
 	IsUploaded bool      `json:"is_uploaded"`
 	UserId     uuid.UUID `json:"user_id"`
 	Timestamps
@@ -55,8 +54,6 @@ type PhotoCategoryData struct {
 }
 
 type CreatePhotoRequest struct {
-	Link        string      `json:"link"`
-	UserId      uuid.UUID   `json:"user_id"`
 	CategoryIds []uuid.UUID `json:"category_ids"`
 }
 
@@ -65,8 +62,7 @@ type CreatePhotoResponse struct {
 }
 
 type UpdatePhotoRequest struct {
-	Link       *string `json:"link"`
-	IsUploaded *bool   `json:"is_uploaded"`
+	IsUploaded *bool `json:"is_uploaded"`
 }
 
 type UpdatePhotoResponse struct {
@@ -78,9 +74,7 @@ type ListPhotoParams struct {
 	Sort     *string `form:"sort,omitempty"`
 }
 
-// TODO: remvoe once auth is implemented
 type ListMyPhotoParams struct {
-	UserId *string `form:"user_id" binding:"required"`
 }
 
 // Returns an entries link to reveal other possible state transitions.

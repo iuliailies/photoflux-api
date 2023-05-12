@@ -11,6 +11,10 @@ import (
 )
 
 func (h *handler) HandleListCategories(ctx *gin.Context) {
+	_, ok := common.GetAuthHeader(ctx)
+	if !ok {
+		return
+	}
 
 	var categories []model.Category
 	err := h.db.WithContext(ctx).Order("id asc").Find(&categories).Error

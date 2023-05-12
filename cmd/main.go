@@ -6,38 +6,52 @@ import (
 
 	log "github.com/Ozoniuss/stdlog"
 	"github.com/iuliailies/photo-flux/internal/config"
+	pfrabbit "github.com/iuliailies/photo-flux/internal/rabbitmq"
 	"github.com/iuliailies/photo-flux/internal/router"
+	"github.com/iuliailies/photo-flux/internal/storage"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 // connect starts the connection with the database.
-func connect() (*gorm.DB, error) {
-	host := "localhost"
-	port := 5432
-	user := "photoflux"
-	dbname := "photoflux"
-	password := "photoflux"
-
+func connect(config config.Database) (*gorm.DB, error) {
 	conn, err := gorm.Open(postgres.Open(
-		fmt.Sprintf("postgresql://%s:%s@%s:%d/%s", user, password, host, port, dbname),
+		fmt.Sprintf("postgresql://%s:%s@%s:%d/%s", config.User, config.Password, config.Host, config.Port, config.Name),
 	))
 	return conn, err
 }
 
 func run() error {
-	db, err := connect()
+
+	c, err := config.ParseConfig()
+	if err != nil {
+		return fmt.Errorf("could not initialize config: %w", err)
+	}
+	fmt.Printf("config: %+v\n", c)
+
+	db, err := connect(c.Database)
 
 	if err != nil {
 		return fmt.Errorf("could not connect to db: %w", err)
 	}
 
-	// TODO: actually use config
+	storage, err := storage.New(c.Storage)
+	if err != nil {
+		return fmt.Errorf("could not initialize minio connection: %w", err)
+	}
 
-	c := config.Config{}
+	// Start the notification listener
+	uploadsListener := pfrabbit.NewUploadsListener(db)
+	err = uploadsListener.Start()
+	if err != nil {
+		return fmt.Errorf("could not start uploads listener: %w", err)
+	}
 
-	engine, err := router.NewRouter(db, c)
-	engine.Run("127.0.0.1:8033")
+	engine, err := router.NewRouter(db, storage, c)
+	if err != nil {
+		return fmt.Errorf("could not initialize router: %w", err)
+	}
+	engine.Run(":8033")
 
 	return nil
 }

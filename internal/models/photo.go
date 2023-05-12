@@ -9,7 +9,6 @@ import (
 
 type Photo struct {
 	BaseModel
-	Link       string `validate:"required"`
 	IsUploaded bool
 	UserId     uuid.UUID  `validate:"required"`
 	Categories []Category `gorm:"many2many:photo_categories;"`
@@ -22,7 +21,7 @@ type PhotoWithStars struct {
 }
 
 func (p *Photo) PrintInfo() {
-	fmt.Printf("UUID: %s\tNAME: %s\t UPLOAD_TIME: %s\t IS_UPLOADED: %t\n", p.Id, p.Link, p.CreatedAt, p.IsUploaded)
+	fmt.Printf("UUID: %s\t UPLOAD_TIME: %s\t IS_UPLOADED: %t\n", p.Id, p.CreatedAt, p.IsUploaded)
 }
 
 // AfterUpdate is a gorm hook that adds an error if the entry was not found

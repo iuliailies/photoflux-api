@@ -1,0 +1,42 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:14
+    hostname: photofluxdb
+    # restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PHOTOFLUX_PASSWORD: "photoflux"
+    volumes:
+      # - data:/var/lib/postgresql/data
+      - ../../../scripts/postgres/:/docker-entrypoint-initdb.d:ro
+      - ../migrate:/scripts/migrate
+
+    # photoflux network is used for the communication between the db and the app
+    networks:
+      - db
+  photoflux:
+    build:
+      context: "../../../."
+      # path from context
+      dockerfile: ./deployments/test/docker/Dockerfile
+    # container_name: photoflux
+    hostname: photoflux
+    restart: always
+
+    # containers are in the same network, their hostname is used to establish
+    # connections
+    environment:
+      - PHOTOFLUX_DATABASE_HOST=photofluxdb
+    depends_on:
+      - db
+    networks:
+      - db
+networks:
+  db:
+
+

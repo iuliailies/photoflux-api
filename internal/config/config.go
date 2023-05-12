@@ -1,9 +1,13 @@
 package config
 
+import "time"
+
 type Config struct {
 	Server   Server
 	Database Database
 	ApiPaths ApiPaths
+	Storage  Storage
+	Auth     Auth
 }
 
 type Database struct {
@@ -19,10 +23,27 @@ type Server struct {
 	Port    int32
 }
 
+type Auth struct {
+	Secret              []byte
+	AccessTokenLifetime time.Duration
+	MinioTokenLifetime  time.Duration
+}
+
 type ApiPaths struct {
 	Photos     string
 	Users      string
 	Categories string
+}
+
+type Storage struct {
+	AccessKey      string
+	SecretKey      string
+	MinioAddress   string
+	MinioPort      int32
+	UserPolicyName string
+}
+
+type Notifications struct {
 }
 
 func newConfig() Config {

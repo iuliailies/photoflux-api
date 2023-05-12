@@ -14,6 +14,10 @@ import (
 )
 
 func (h *handler) HandleUpdatePhoto(ctx *gin.Context) {
+	_, ok := common.GetAuthHeader(ctx)
+	if !ok {
+		return
+	}
 
 	id := ctx.Param("id")
 	uuid, err := uuid.Parse(id)
@@ -26,7 +30,7 @@ func (h *handler) HandleUpdatePhoto(ctx *gin.Context) {
 	}
 
 	var req public.UpdatePhotoRequest
-	err = ctx.BindJSON(&req)
+	err = ctx.ShouldBindJSON(&req)
 
 	if err != nil {
 		common.EmitError(ctx, GetPhotoError(
@@ -39,17 +43,6 @@ func (h *handler) HandleUpdatePhoto(ctx *gin.Context) {
 	// https://gorm.io/docs/update.html#Updates-multiple-columns
 	var updatedFields = make(map[string]any)
 
-	if req.Link != nil {
-		if *req.Link != "" {
-			updatedFields["link"] = *req.Link
-		} else {
-			// TODO: improve validation
-			common.EmitError(ctx, UpdatePhotoError(
-				http.StatusInternalServerError,
-				fmt.Sprintf("Could not use query params: %s", err.Error())))
-			return
-		}
-	}
 	if req.IsUploaded != nil {
 		updatedFields["is_uploaded"] = *req.IsUploaded
 	}

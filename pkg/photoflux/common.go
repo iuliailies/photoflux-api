@@ -1,6 +1,9 @@
 package photoflux
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type ResourceID struct {
 	Id   string `json:"id"`
@@ -28,4 +31,8 @@ type Error struct {
 	Status int    `json:"status"`
 	Title  string `json:"title"`
 	Detail string `json:"detail"`
+}
+
+func (e Error) Error() string {
+	return fmt.Sprintf("status=%d, title=%s, detail=%s", e.Status, e.Title, e.Detail)
 }

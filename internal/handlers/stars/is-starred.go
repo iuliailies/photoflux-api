@@ -12,8 +12,13 @@ import (
 )
 
 func (h *handler) HandleIsPhotoStarred(ctx *gin.Context) {
+	ah, ok := common.GetAuthHeader(ctx)
+	if !ok {
+		return
+	}
+
 	var req public.StarRequest
-	err := ctx.BindJSON(&req)
+	err := ctx.ShouldBindJSON(&req)
 
 	if err != nil {
 		common.EmitError(ctx, IsPhotoStarredError(
@@ -25,7 +30,7 @@ func (h *handler) HandleIsPhotoStarred(ctx *gin.Context) {
 	var star []model.Star
 	err = h.db.WithContext(ctx).Clauses(clause.Returning{}).Table("stars").
 		Where("photo_id = ?", req.PhotoId).
-		Where("user_id = ?", req.UserId).
+		Where("user_id = ?", ah.User).
 		Find(&star).
 		Error
 

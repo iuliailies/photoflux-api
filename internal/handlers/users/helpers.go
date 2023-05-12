@@ -15,9 +15,8 @@ func UserToPublic(user model.User, apipath config.ApiPaths, runningTotal float32
 			Type: public.UserType,
 		},
 		Attributes: public.UserAttributes{
-			Name:     user.Name,
-			Email:    user.Email,
-			Password: user.Password,
+			Name:  user.Name,
+			Email: user.Email,
 			Timestamps: public.Timestamps{
 				CreatedAt: user.CreatedAt,
 				UpdatedAt: user.UpdatedAt,

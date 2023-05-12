@@ -11,9 +11,13 @@ import (
 )
 
 func (h *handler) HandleListMyPhoto(ctx *gin.Context) {
+	ah, ok := common.GetAuthHeader(ctx)
+	if !ok {
+		return
+	}
 
 	var params public.ListMyPhotoParams
-	err := ctx.BindQuery(&params)
+	err := ctx.ShouldBindQuery(&params)
 
 	if err != nil {
 		common.EmitError(ctx, ListPhotoError(
@@ -26,16 +30,14 @@ func (h *handler) HandleListMyPhoto(ctx *gin.Context) {
 	// https://gorm.io/docs/query.html#Struct-amp-Map-Conditions
 	var filters = make(map[string]any)
 
-	if params.UserId != nil {
-		filters["photos.user_id"] = params.UserId
-	}
+	filters["photos.user_id"] = ah.User
 
 	var photos []model.PhotoWithStars
 
 	err = h.db.Debug().Table("photos").
 		Joins("JOIN photo_categories ON photo_categories.photo_id = photos.id").
 		Joins("LEFT JOIN stars ON stars.photo_id = photos.id").
-		Where(filters). // TODO: error handling invalid id?
+		Where(filters).
 		Group("photos.id").
 		Select("photos.id, photos.link, photos.user_id, photos.is_uploaded, photos.created_at, photos.updated_at, COUNT(stars.user_id) AS star_count").
 		Order("created_at DESC").

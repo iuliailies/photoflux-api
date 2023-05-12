@@ -12,6 +12,10 @@ import (
 )
 
 func (h *handler) HandleGetPhoto(ctx *gin.Context) {
+	_, ok := common.GetAuthHeader(ctx)
+	if !ok {
+		return
+	}
 
 	id := ctx.Param("id")
 	_uuid, err := uuid.Parse(id)
