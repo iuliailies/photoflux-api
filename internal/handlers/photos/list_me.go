@@ -33,6 +33,7 @@ func (h *handler) HandleListMyPhoto(ctx *gin.Context) {
 	filters["photos.user_id"] = ah.User
 
 	var photos []model.PhotoWithStars
+	var count int64
 
 	err = h.db.Debug().Table("photos").
 		Joins("JOIN photo_categories ON photo_categories.photo_id = photos.id").
@@ -42,6 +43,7 @@ func (h *handler) HandleListMyPhoto(ctx *gin.Context) {
 		Select("photos.id, photos.link, photos.user_id, photos.is_uploaded, photos.created_at, photos.updated_at, COUNT(stars.user_id) AS star_count").
 		Order("created_at DESC").
 		Scan(&photos).
+		Count(&count).
 		Error
 
 	if err != nil {
@@ -51,8 +53,28 @@ func (h *handler) HandleListMyPhoto(ctx *gin.Context) {
 		return
 	}
 
+	var totalStars int64
+	err = h.db.Debug().
+		Table("photos").
+		Select("COUNT(*) as total_stars").
+		Joins("JOIN stars ON photos.id = stars.photo_id").
+		Where("photos.user_id = ?", ah.User.ID()).
+		Scan(&totalStars).
+		Error
+
+	if err != nil {
+		common.EmitError(ctx, ListPhotoError(
+			http.StatusInternalServerError,
+			fmt.Sprintf("Could not get total star count of user: %s", err.Error())))
+		return
+	}
+
 	resp := public.ListPhotoResponse{
 		Data: make([]public.PhotoListItemData, 0, len(photos)),
+		Meta: public.PhotoListMeta{
+			NumberStars:  totalStars,
+			NumberPhotos: count,
+		},
 		Links: public.ListPhotoLinks{
 			Self: h.apiPaths.Photos + "/",
 		},

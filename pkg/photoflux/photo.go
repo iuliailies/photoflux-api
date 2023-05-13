@@ -31,6 +31,11 @@ type PhotoMeta struct {
 	NumberStars int64 `json:"number_stars"`
 }
 
+type PhotoListMeta struct {
+	NumberStars  int64 `json:"number_stars"`
+	NumberPhotos int64 `json:"number_photos"`
+}
+
 type PhotoLinks struct {
 	Self string `json:"self"`
 }
@@ -85,6 +90,7 @@ type ListPhotoLinks struct {
 
 type ListPhotoResponse struct {
 	Data  []PhotoListItemData `json:"data"`
+	Meta  PhotoListMeta       `json:"meta"`
 	Links ListPhotoLinks      `json:"links"`
 }
 
