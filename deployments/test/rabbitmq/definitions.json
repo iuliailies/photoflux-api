@@ -1,34 +1,73 @@
 {
-    "queues": [
-        {
-            "name": "upload",
-            "vhost": "/",
-            "durable": true,
-            "auto_delete": false,
-            "arguments": {
-                "x-queue-type": "classic"
-            }
-        }
-    ],
-    "exchanges": [
-        {
-            "name": "upload",
-            "vhost": "/",
-            "type": "direct",
-            "durable": true,
-            "auto_delete": false,
-            "internal": false,
-            "arguments": {}
-        }
-    ],
-    "bindings": [
-        {
-            "source": "upload",
-            "vhost": "/",
-            "destination": "upload",
-            "destination_type": "queue",
-            "routing_key": "upload",
-            "arguments": {}
-        }
-      ]
+  "users": [
+    {
+      "name": "guest",
+      "password": "guest",
+      "tags": ["administrator"]
+    },
+    {
+      "name": "iulia",
+      "password": "mygreatnewpassword",
+      "tags": ["photofluxconn"]
+    }
+  ],
+  "vhosts": [
+    {
+      "name": "photoflux"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "guest",
+      "vhost": "photoflux",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "iulia",
+      "vhost": "photoflux",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "queues": [
+    {
+      "name": "upload",
+      "vhost": "photoflux",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic"
+      }
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "upload",
+      "vhost": "photoflux",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "upload",
+      "vhost": "photoflux",
+      "destination": "upload",
+      "destination_type": "queue",
+      "routing_key": "upload",
+      "arguments": {}
+    }
+  ],
+  "global_parameters": [
+    {
+      "name": "internal_cluster_id",
+      "value": "rabbitmq-cluster-id-daX0dbWzEtZK5ncoHUE4rg"
+    }
+  ]
 }

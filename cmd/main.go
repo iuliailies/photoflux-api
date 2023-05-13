@@ -41,7 +41,7 @@ func run() error {
 	}
 
 	// Start the notification listener
-	uploadsListener := pfrabbit.NewUploadsListener(db)
+	uploadsListener := pfrabbit.NewUploadsListener(db, c.Notifications.RabbitMQ)
 	err = uploadsListener.Start()
 	if err != nil {
 		return fmt.Errorf("could not start uploads listener: %w", err)

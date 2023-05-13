@@ -11,7 +11,7 @@ func databaseOptions() []cfg.ConfigOption {
 	return []cfg.ConfigOption{
 		{FlagName: "db-name", Shorthand: "", Value: "photoflux", ConfigKey: "database.name",
 			Usage: "Specifies the name of the ports database."},
-		{FlagName: "db-host", Shorthand: "", Value: "127.0.0.1", ConfigKey: "database.host",
+		{FlagName: "db-host", Shorthand: "", Value: "localhost", ConfigKey: "database.host",
 			Usage: "Specifies the address on which the ports database listens for connections."},
 		{FlagName: "db-port", Shorthand: "", Value: int32(5432), ConfigKey: "database.port",
 			Usage: "Specifies the port on which the ports database listens for connections."},
@@ -37,7 +37,7 @@ func storageOptions() []cfg.ConfigOption {
 			Usage: "Access key of the admin minio client."},
 		{FlagName: "storage-secret-key", Shorthand: "", Value: "myfriend", ConfigKey: "storage.secretkey",
 			Usage: "Secret key of the admin minio client."},
-		{FlagName: "stoarge-minio-address", Shorthand: "", Value: "127.0.0.1", ConfigKey: "storage.minioaddress",
+		{FlagName: "stoarge-minio-address", Shorthand: "", Value: "localhost", ConfigKey: "storage.minioaddress",
 			Usage: "Address of the minio server."},
 		{FlagName: "storage-minio-port", Shorthand: "", Value: int32(9000), ConfigKey: "storage.minioport",
 			Usage: "Port of the minio server."},
@@ -57,12 +57,32 @@ func authOptions() []cfg.ConfigOption {
 	}
 }
 
+func notificationOptions() []cfg.ConfigOption {
+	return []cfg.ConfigOption{
+		{FlagName: "notification-rabbitmq-host", Shorthand: "", Value: "localhost", ConfigKey: "notifications.rabbitmq.host",
+			Usage: "The hostname of the rabbitmq container in the event network."},
+		{FlagName: "notification-rabbitmq-vhost", Shorthand: "", Value: "photoflux", ConfigKey: "notifications.rabbitmq.vhost",
+			Usage: "The logical photoflux resource grouping inside rabbitmq."},
+		{FlagName: "notification-rabbitmq-user", Shorthand: "", Value: "iulia", ConfigKey: "notifications.rabbitmq.user",
+			Usage: "The rabbitmq user as which the backend connects with."},
+		{FlagName: "notification-rabbitmq-password", Shorthand: "", Value: "mygreatnewpassword", ConfigKey: "notifications.rabbitmq.password",
+			Usage: "The password of the rabbitmq user used by the backend."},
+		{FlagName: "notification-rabbitmq-port", Shorthand: "", Value: 5672, ConfigKey: "notifications.rabbitmq.port",
+			Usage: "The port of the rabbitmq container in the event network."},
+		{FlagName: "notification-rabbitmq-queue", Shorthand: "", Value: "upload", ConfigKey: "notifications.rabbitmq.queue",
+			Usage: "The queue sending the photo events."},
+		{FlagName: "notification-rabbitmq-exchange", Shorthand: "", Value: "upload", ConfigKey: "notifications.rabbitmq.exchange",
+			Usage: "The exchange to which photo events are sent to."},
+	}
+}
+
 func allOptions() []cfg.ConfigOption {
 	opts := make([]cfg.ConfigOption, 0)
 	opts = append(opts, databaseOptions()...)
 	opts = append(opts, serverOptions()...)
 	opts = append(opts, storageOptions()...)
 	opts = append(opts, authOptions()...)
+	opts = append(opts, notificationOptions()...)
 	return opts
 }
 
