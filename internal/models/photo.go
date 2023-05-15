@@ -10,7 +10,8 @@ import (
 type Photo struct {
 	BaseModel
 	IsUploaded bool
-	UserId     uuid.UUID  `validate:"required"`
+	UserId     uuid.UUID `validate:"required"`
+	Name       string
 	Categories []Category `gorm:"many2many:photo_categories;"`
 	Users      []User     `gorm:"many2many:stars;"`
 }

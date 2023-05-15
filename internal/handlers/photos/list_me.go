@@ -3,6 +3,7 @@ package photos
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/iuliailies/photo-flux/internal/handlers/common"
@@ -40,7 +41,7 @@ func (h *handler) HandleListMyPhoto(ctx *gin.Context) {
 		Joins("LEFT JOIN stars ON stars.photo_id = photos.id").
 		Where(filters).
 		Group("photos.id").
-		Select("photos.id, photos.link, photos.user_id, photos.is_uploaded, photos.created_at, photos.updated_at, COUNT(stars.user_id) AS star_count").
+		Select("photos.id, photos.user_id, photos.name, photos.is_uploaded, photos.created_at, photos.updated_at, COUNT(stars.user_id) AS star_count").
 		Order("created_at DESC").
 		Scan(&photos).
 		Count(&count).
@@ -58,7 +59,7 @@ func (h *handler) HandleListMyPhoto(ctx *gin.Context) {
 		Table("photos").
 		Select("COUNT(*) as total_stars").
 		Joins("JOIN stars ON photos.id = stars.photo_id").
-		Where("photos.user_id = ?", ah.User.ID()).
+		Where("photos.user_id = ?", ah.User).
 		Scan(&totalStars).
 		Error
 
@@ -80,7 +81,10 @@ func (h *handler) HandleListMyPhoto(ctx *gin.Context) {
 		},
 	}
 	for _, photo := range photos {
-		resp.Data = append(resp.Data, PhotoToPublicListItem(photo, h.apiPaths))
+		// TODO error handling
+		url, _ := h.storage.GetPresignedGet(ctx, "user-"+ah.User.String(), photo.Name, time.Minute)
+		fmt.Println("XXXXXXXXXXXXXX", photo, url)
+		resp.Data = append(resp.Data, PhotoToPublicListItem(photo, h.apiPaths, url))
 	}
 	ctx.JSON(http.StatusOK, &resp)
 }

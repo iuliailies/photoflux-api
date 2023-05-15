@@ -9,7 +9,7 @@ import (
 	public "github.com/iuliailies/photo-flux/pkg/photoflux"
 )
 
-func PhotoToPublic(photo model.PhotoWithStars, apipath config.ApiPaths) public.PhotoData {
+func PhotoToPublic(photo model.PhotoWithStars, apipath config.ApiPaths, url string) public.PhotoData {
 	return public.PhotoData{
 		ResourceID: public.ResourceID{
 			Id:   photo.Id.String(),
@@ -25,6 +25,7 @@ func PhotoToPublic(photo model.PhotoWithStars, apipath config.ApiPaths) public.P
 		},
 		Meta: public.PhotoMeta{
 			NumberStars: photo.StarCount,
+			HRef:        url,
 		},
 		Links: public.PhotoLinks{
 			Self: fmt.Sprintf("%s/%s", apipath.Photos, photo.Id.String()),
@@ -32,7 +33,7 @@ func PhotoToPublic(photo model.PhotoWithStars, apipath config.ApiPaths) public.P
 	}
 }
 
-func PhotoWithRelationshipToPublic(photo model.PhotoWithStars, apipath config.ApiPaths, categoryIds []uuid.UUID) public.PhotoData {
+func PhotoWithRelationshipToPublic(photo model.PhotoWithStars, apipath config.ApiPaths, categoryIds []uuid.UUID, url string) public.PhotoData {
 	photoCategoryEntries := make([]public.PhotoCategoryData, 0, len(categoryIds))
 	for _, cId := range categoryIds {
 		entry := public.PhotoCategoryData{
@@ -56,6 +57,7 @@ func PhotoWithRelationshipToPublic(photo model.PhotoWithStars, apipath config.Ap
 		},
 		Meta: public.PhotoMeta{
 			NumberStars: photo.StarCount,
+			HRef:        url,
 		},
 		Links: public.PhotoLinks{
 			Self: fmt.Sprintf("%s/%s", apipath.Photos, photo.Id.String()),
@@ -71,7 +73,7 @@ func PhotoWithRelationshipToPublic(photo model.PhotoWithStars, apipath config.Ap
 	}
 }
 
-func PhotoToPublicListItem(photo model.PhotoWithStars, apipath config.ApiPaths) public.PhotoListItemData {
+func PhotoToPublicListItem(photo model.PhotoWithStars, apipath config.ApiPaths, url string) public.PhotoListItemData {
 	return public.PhotoListItemData{
 		ResourceID: public.ResourceID{
 			Id:   photo.Id.String(),
@@ -87,6 +89,7 @@ func PhotoToPublicListItem(photo model.PhotoWithStars, apipath config.ApiPaths) 
 		},
 		Meta: public.PhotoMeta{
 			NumberStars: photo.StarCount,
+			HRef:        url,
 		},
 		Links: public.PhotoListItemLinks{
 			Self: fmt.Sprintf("%s/%s", apipath.Photos, photo.Id.String()),

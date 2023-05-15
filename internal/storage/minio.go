@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/iuliailies/photo-flux/internal/config"
@@ -47,6 +48,22 @@ func New(config config.Storage) (*Storage, error) {
 		},
 		userPolicyName: config.UserPolicyName,
 	}, nil
+}
+
+func (s *Storage) GetPresignedPut(ctx context.Context, bucketName string, objectName string, expires time.Duration) (string, error) {
+	url, err := s.conn.adminClient.PresignedPutObject(ctx, bucketName, objectName, expires)
+	if err != nil {
+		return "", err
+	}
+	return url.String(), nil
+}
+
+func (s *Storage) GetPresignedGet(ctx context.Context, bucketName string, objectName string, expires time.Duration) (string, error) {
+	url, err := s.conn.adminClient.PresignedGetObject(ctx, bucketName, objectName, expires, make(map[string][]string))
+	if err != nil {
+		return "", err
+	}
+	return url.String(), nil
 }
 
 // NewMinioUser configures a user in the minio storage: add user + set policies + create corresponding bucket

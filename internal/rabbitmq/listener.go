@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/iuliailies/photo-flux/internal/models"
+	"github.com/iuliailies/photo-flux/internal/config"
+	model "github.com/iuliailies/photo-flux/internal/models"
 	"github.com/minio/minio-go"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"gorm.io/gorm"
@@ -13,18 +14,21 @@ import (
 
 const QNAME = "upload"
 const XNAME = "upload"
+const VHOST = "photoflux"
 
 type UploadsListener struct {
 	db           *gorm.DB
 	queueName    string
 	exchangeName string
+	connstr      string
 }
 
-func NewUploadsListener(db *gorm.DB) UploadsListener {
+func NewUploadsListener(db *gorm.DB, config config.RabbitMQ) UploadsListener {
 	return UploadsListener{
 		db:           db,
-		queueName:    QNAME,
-		exchangeName: XNAME,
+		queueName:    config.Queue,
+		exchangeName: config.Exchange,
+		connstr:      fmt.Sprintf("amqp://%s:%s@%s:%d/%s", config.User, config.Password, config.Host, config.Port, config.Vhost),
 	}
 }
 
@@ -47,7 +51,8 @@ func (u UploadsListener) Start() error {
 	var errc = make(chan error)
 
 	go func() {
-		conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+		fmt.Println(u.connstr)
+		conn, err := amqp.Dial(u.connstr)
 		if err != nil {
 			errc <- fmt.Errorf("could not connect to rabbitmq: %w", err)
 			return
@@ -61,13 +66,13 @@ func (u UploadsListener) Start() error {
 		defer ch.Close()
 
 		err = ch.ExchangeDeclare(
-			XNAME,    // name
-			"direct", // type
-			true,     // durable
-			false,    // auto-deleted
-			false,    // internal
-			false,    // no-wait
-			nil,      // arguments
+			u.exchangeName, // name
+			"direct",       // type
+			true,           // durable
+			false,          // auto-deleted
+			false,          // internal
+			false,          // no-wait
+			nil,            // arguments
 		)
 		if err != nil {
 			errc <- fmt.Errorf("could not declare exchange")
@@ -76,12 +81,12 @@ func (u UploadsListener) Start() error {
 
 		// We create a Queue to read messages from.
 		q, err := ch.QueueDeclare(
-			QNAME, // name
-			true,  // durable
-			false, // delete when unused
-			false, // exclusive
-			false, // no-wait
-			nil,   // arguments
+			u.queueName, // name
+			true,        // durable
+			false,       // delete when unused
+			false,       // exclusive
+			false,       // no-wait
+			nil,         // arguments
 		)
 		if err != nil {
 			errc <- fmt.Errorf("could not declare queue: %w", err)
@@ -117,7 +122,6 @@ func (u UploadsListener) Start() error {
 		// The main function can return while this goroutine is still running.
 		close(errc)
 
-		// looping through a channel with a for loop waits until the channel is closed
 		for d := range msgs {
 
 			fmt.Printf("Received a message: %v\n", string(d.Body))
@@ -136,13 +140,15 @@ func (u UploadsListener) Start() error {
 			fmt.Println("bucket", bucket)
 			fmt.Println("file", file)
 
-			err = u.db.Updates(&model.Photo{}).Where("id = ?", file).Update("is_active", true).Error
+			err = u.db.Model(&model.Photo{}).Where("id = ?", file).Update("is_uploaded", true).Error
+
 			if err != nil {
-
-				fmt.Printf(err.Error())
+				// Since no ack is send, the event will be requeued at some point.s
+				fmt.Printf("an error occured during notification handling: %s", err.Error())
+			} else {
+				// Photo was updated succesfully
+				d.Ack(false) // acknowlledged
 			}
-
-			d.Ack(false)
 		}
 	}()
 

@@ -42,8 +42,9 @@ func (h *handler) HandleDeletePhoto(ctx *gin.Context) {
 		StarCount: 0,
 	}
 
+	// TODO integrate with minio
 	resp := public.DeletePhotoResponse{
-		Data: PhotoToPublic(photoWithStars, h.apiPaths),
+		Data: PhotoToPublic(photoWithStars, h.apiPaths, ""),
 	}
 
 	resp.Data.Links.Self = ""

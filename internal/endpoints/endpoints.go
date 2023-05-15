@@ -19,7 +19,7 @@ func RegisterPhotos(router *gin.Engine, config config.Auth, h handlers.PhotoHand
 }
 
 func RegisterUsers(router *gin.Engine, config config.Auth, h handlers.UserHandler) {
-	subrouter := router.Group("/api/users").Use(auth.BearerAuth(config.Secret)) // ????
+	subrouter := router.Group("/api/users").Use(auth.BearerAuth(config.Secret))
 
 	subrouter.GET("/:id", h.HandleGetUser)
 }

@@ -3,6 +3,7 @@ package photos
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -12,7 +13,7 @@ import (
 )
 
 func (h *handler) HandleGetPhoto(ctx *gin.Context) {
-	_, ok := common.GetAuthHeader(ctx)
+	ah, ok := common.GetAuthHeader(ctx)
 	if !ok {
 		return
 	}
@@ -63,8 +64,16 @@ func (h *handler) HandleGetPhoto(ctx *gin.Context) {
 		StarCount: starAssociation.Count(),
 	}
 
+	url, err := h.storage.GetPresignedGet(ctx, "user-"+ah.User.String(), photo.Name, time.Minute)
+	if err != nil {
+		common.EmitError(ctx, GetPhotoError(
+			http.StatusInternalServerError,
+			fmt.Sprintf("Could not get photo href: %s", err.Error())))
+		return
+	}
+
 	resp := public.GetPhotoResponse{
-		Data: PhotoWithRelationshipToPublic(photoWithStar, h.apiPaths, categoryIds),
+		Data: PhotoWithRelationshipToPublic(photoWithStar, h.apiPaths, categoryIds, url),
 	}
 
 	ctx.JSON(http.StatusOK, &resp)

@@ -3,11 +3,12 @@ package config
 import "time"
 
 type Config struct {
-	Server   Server
-	Database Database
-	ApiPaths ApiPaths
-	Storage  Storage
-	Auth     Auth
+	Server        Server
+	Database      Database
+	ApiPaths      ApiPaths
+	Storage       Storage
+	Auth          Auth
+	Notifications Notifications
 }
 
 type Database struct {
@@ -44,6 +45,17 @@ type Storage struct {
 }
 
 type Notifications struct {
+	RabbitMQ RabbitMQ
+}
+
+type RabbitMQ struct {
+	User     string
+	Password string
+	Host     string
+	Port     int32
+	Vhost    string
+	Exchange string
+	Queue    string
 }
 
 func newConfig() Config {

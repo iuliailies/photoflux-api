@@ -3,12 +3,14 @@ package photos
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/iuliailies/photo-flux/internal/handlers/common"
 	model "github.com/iuliailies/photo-flux/internal/models"
+	"github.com/iuliailies/photo-flux/internal/rand"
 	public "github.com/iuliailies/photo-flux/pkg/photoflux"
 	"gorm.io/gorm/clause"
 )
@@ -37,12 +39,22 @@ func (h *handler) HandleCreatePhoto(ctx *gin.Context) {
 	if len(req.CategoryIds) == 0 {
 		common.EmitError(ctx, CreatePhotoError(
 			http.StatusBadRequest,
-			fmt.Sprintf("Could not create photo: at least one category should be spcified.")))
+			fmt.Sprintf("Could not create photo: at least one category should be specified.")))
+		return
+	}
+
+	// randomly generating a file name in order to uniquily identity it in the minio bucket storage
+	objectName, err := rand.RandomStringSecret(64)
+	if err != nil {
+		common.EmitError(ctx, CreatePhotoError(
+			http.StatusBadRequest,
+			fmt.Sprintf("Could not create photo name: %s", err.Error())))
 		return
 	}
 
 	Photo := model.Photo{
 		UserId: ah.User,
+		Name:   objectName,
 	}
 
 	v := validator.New()
@@ -80,13 +92,21 @@ func (h *handler) HandleCreatePhoto(ctx *gin.Context) {
 		return
 	}
 
+	url, err := h.storage.GetPresignedPut(ctx, "user-"+ah.User.String(), objectName, time.Minute)
+	if err != nil {
+		common.EmitError(ctx, CreatePhotoError(
+			http.StatusInternalServerError,
+			fmt.Sprintf("Could not create Photo Href: %s", err.Error())))
+		return
+	}
+
 	photoWithStar := model.PhotoWithStars{
 		Photo:     Photo,
 		StarCount: 0,
 	}
 
 	resp := public.CreatePhotoResponse{
-		Data: PhotoWithRelationshipToPublic(photoWithStar, h.apiPaths, req.CategoryIds),
+		Data: PhotoWithRelationshipToPublic(photoWithStar, h.apiPaths, req.CategoryIds, url),
 	}
 
 	ctx.JSON(http.StatusCreated, &resp)

@@ -3,6 +3,7 @@ package photos
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/iuliailies/photo-flux/internal/handlers/common"
@@ -11,7 +12,7 @@ import (
 )
 
 func (h *handler) HandleListPhoto(ctx *gin.Context) {
-	_, ok := common.GetAuthHeader(ctx)
+	ah, ok := common.GetAuthHeader(ctx)
 	if !ok {
 		return
 	}
@@ -74,7 +75,9 @@ func (h *handler) HandleListPhoto(ctx *gin.Context) {
 		},
 	}
 	for _, photo := range photos {
-		resp.Data = append(resp.Data, PhotoToPublicListItem(photo, h.apiPaths))
+		// TODO error handling
+		url, _ := h.storage.GetPresignedGet(ctx, "user-"+ah.User.String(), photo.Name, time.Minute)
+		resp.Data = append(resp.Data, PhotoToPublicListItem(photo, h.apiPaths, url))
 	}
 	ctx.JSON(http.StatusOK, &resp)
 }

@@ -18,7 +18,7 @@ func NewRouter(db *gorm.DB, storage *storage.Storage, config config.Config) (*gi
 	r := gin.Default()
 	SetupCORS(r)
 	{
-		h := photos.NewHandler(db, config)
+		h := photos.NewHandler(db, storage, config)
 		endpoints.RegisterPhotos(r, config.Auth, &h)
 	}
 	{

@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS photos
 (
     id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
     is_uploaded boolean,
+    name text,
     user_id uuid,
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL,

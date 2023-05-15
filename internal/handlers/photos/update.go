@@ -70,8 +70,9 @@ func (h *handler) HandleUpdatePhoto(ctx *gin.Context) {
 		StarCount: starAssociation.Count(),
 	}
 
+	// TODO: integrate with minio if needed
 	resp := public.UpdatePhotoResponse{
-		Data: PhotoToPublic(photoWithStars, h.apiPaths),
+		Data: PhotoToPublic(photoWithStars, h.apiPaths, ""),
 	}
 
 	ctx.JSON(http.StatusOK, &resp)
