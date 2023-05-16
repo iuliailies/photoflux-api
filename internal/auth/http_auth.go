@@ -14,22 +14,40 @@ import (
 // Unauthorized response in case of invalid authentication data.
 func BearerAuth(secret []byte) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		header := ctx.GetHeader("Authorization")
-		tokenstr, err := getBearerToken(header)
-		if err != nil {
-			fmt.Println("error getting bearer", err)
-			failAuth(ctx)
-			return
-		}
-		identity, ok := parseJWT(tokenstr, secret)
-		if !ok {
-			fmt.Println("error parsing jwt", err)
-			failAuth(ctx)
-			return
-		}
-		ctx.Set(Authkey, identity)
+		bearerAuth(ctx, secret, false)
 	}
 
+}
+
+func BearerAuthAllowExpired(secret []byte) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		bearerAuth(ctx, secret, true)
+	}
+}
+
+func bearerAuth(ctx *gin.Context, secret []byte, acceptExpired bool) {
+	header := ctx.GetHeader("Authorization")
+	tokenstr, err := getBearerToken(header)
+	if err != nil {
+		fmt.Println("error getting bearer", err)
+		failAuth(ctx)
+		return
+	}
+	var identity Identity
+	var ok bool
+	// TODO: chekc while passing function as method argument is not allowed
+	if acceptExpired {
+		identity, ok = parseExpiredJWT(tokenstr, secret)
+	} else {
+		identity, ok = parseJWT(tokenstr, secret)
+	}
+
+	if !ok {
+		fmt.Println("error parsing jwt", err)
+		failAuth(ctx)
+		return
+	}
+	ctx.Set(Authkey, identity)
 }
 
 // failAuth fails an authentication request with a 401 Unauthorized.

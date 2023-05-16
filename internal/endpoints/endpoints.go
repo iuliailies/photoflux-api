@@ -41,7 +41,10 @@ func RegisterAuth(router *gin.Engine, config config.Auth, h handlers.AuthHandler
 	subrouter := router.Group("/api/auth")
 	subrouter.POST("/register", h.HandleRegister)
 	subrouter.POST("/login", h.HandleLogin)
-	subrouter.POST("/refresh", h.HandleRefresh)
 	subrouter.POST("/logout", h.HandleLogout)
 	subrouter.POST("/minio", auth.MinioAuth(config.Secret), h.HandleMinioAuth)
+
+	// the refresh request uses an independent middleware, which only allows expired tokens
+	subsubrouter := subrouter.Group("/refresh").Use(auth.BearerAuthAllowExpired(config.Secret))
+	subsubrouter.POST("", h.HandleRefresh)
 }
