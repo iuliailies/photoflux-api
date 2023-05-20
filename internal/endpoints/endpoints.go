@@ -48,3 +48,11 @@ func RegisterAuth(router *gin.Engine, config config.Auth, h handlers.AuthHandler
 	subsubrouter := subrouter.Group("/refresh").Use(auth.BearerAuthAllowExpired(config.Secret))
 	subsubrouter.POST("", h.HandleRefresh)
 }
+
+func RegisterBoards(router *gin.Engine, config config.Auth, h handlers.BoardHandler) {
+	subrouter := router.Group("/api/boards").Use(auth.BearerAuth(config.Secret))
+
+	subrouter.GET("/", h.HandleListBoard)
+	subrouter.GET("/:id", h.HandleGetBoard)
+	subrouter.POST("/", h.HandleCreateBoard)
+}

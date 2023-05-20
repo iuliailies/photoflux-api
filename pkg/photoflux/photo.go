@@ -33,6 +33,10 @@ type PhotoMeta struct {
 }
 
 type PhotoListMeta struct {
+	CategoryName string `json:"category_name"`
+}
+
+type MyPhotoListMeta struct {
 	NumberStars  int64 `json:"number_stars"`
 	NumberPhotos int64 `json:"number_photos"`
 }
@@ -92,6 +96,12 @@ type ListPhotoLinks struct {
 type ListPhotoResponse struct {
 	Data  []PhotoListItemData `json:"data"`
 	Meta  PhotoListMeta       `json:"meta"`
+	Links ListPhotoLinks      `json:"links"`
+}
+
+type ListMyPhotoResponse struct {
+	Data  []PhotoListItemData `json:"data"`
+	Meta  MyPhotoListMeta     `json:"meta"`
 	Links ListPhotoLinks      `json:"links"`
 }
 

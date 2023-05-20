@@ -31,3 +31,9 @@ type AuthHandler interface {
 	HandleLogout(ctx *gin.Context)
 	HandleMinioAuth(ctx *gin.Context)
 }
+
+type BoardHandler interface {
+	HandleListBoard(ctx *gin.Context)
+	HandleGetBoard(ctx *gin.Context)
+	HandleCreateBoard(ctx *gin.Context)
+}

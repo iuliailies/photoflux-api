@@ -12,7 +12,7 @@ import (
 )
 
 func (h *handler) HandleListPhoto(ctx *gin.Context) {
-	ah, ok := common.GetAuthHeader(ctx)
+	_, ok := common.GetAuthHeader(ctx)
 	if !ok {
 		return
 	}
@@ -24,6 +24,16 @@ func (h *handler) HandleListPhoto(ctx *gin.Context) {
 		common.EmitError(ctx, ListPhotoError(
 			http.StatusBadRequest,
 			fmt.Sprintf("Could not bind query params: %s", err.Error())))
+		return
+	}
+
+	var category model.Category
+	err = h.db.WithContext(ctx).Where("id = ?", *params.Category).Take(&category).Error
+
+	if err != nil {
+		common.EmitError(ctx, ListPhotoError(
+			http.StatusInternalServerError,
+			fmt.Sprintf("Could not list photos. Invalid category: %s", err.Error())))
 		return
 	}
 
@@ -40,9 +50,9 @@ func (h *handler) HandleListPhoto(ctx *gin.Context) {
 	selection := h.db.Debug().Table("photos").
 		Joins("JOIN photo_categories ON photo_categories.photo_id = photos.id").
 		Joins("LEFT JOIN stars ON stars.photo_id = photos.id").
-		Where(filters). // TODO: error handling invalid id?
+		Where(filters).
 		Group("photos.id").
-		Select("photos.id, photos.link, photos.user_id, photos.is_uploaded, photos.created_at, photos.updated_at, COUNT(stars.user_id) AS star_count").
+		Select("photos.id, photos.user_id, photos.name, photos.is_uploaded, photos.created_at, photos.updated_at, COUNT(stars.user_id) AS star_count").
 		Scan(&photos)
 
 	if params.Sort != nil {
@@ -64,19 +74,22 @@ func (h *handler) HandleListPhoto(ctx *gin.Context) {
 	if selection.Error != nil {
 		common.EmitError(ctx, ListPhotoError(
 			http.StatusInternalServerError,
-			fmt.Sprintf("Could not list photos: %s", err.Error())))
+			fmt.Sprintf("Could not list photos: %s", selection.Error.Error())))
 		return
 	}
 
 	resp := public.ListPhotoResponse{
 		Data: make([]public.PhotoListItemData, 0, len(photos)),
+		Meta: public.PhotoListMeta{
+			CategoryName: category.Name,
+		},
 		Links: public.ListPhotoLinks{
 			Self: h.apiPaths.Photos + "/",
 		},
 	}
 	for _, photo := range photos {
 		// TODO error handling
-		url, _ := h.storage.GetPresignedGet(ctx, "user-"+ah.User.String(), photo.Name, time.Minute)
+		url, _ := h.storage.GetPresignedGet(ctx, "user-"+photo.UserId.String(), photo.Name, time.Minute)
 		resp.Data = append(resp.Data, PhotoToPublicListItem(photo, h.apiPaths, url))
 	}
 	ctx.JSON(http.StatusOK, &resp)

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -9,17 +10,9 @@ import (
 	pfrabbit "github.com/iuliailies/photo-flux/internal/rabbitmq"
 	"github.com/iuliailies/photo-flux/internal/router"
 	"github.com/iuliailies/photo-flux/internal/storage"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+	"github.com/iuliailies/photo-flux/internal/store/mongo"
+	"github.com/iuliailies/photo-flux/internal/store/postgres"
 )
-
-// connect starts the connection with the database.
-func connect(config config.Database) (*gorm.DB, error) {
-	conn, err := gorm.Open(postgres.Open(
-		fmt.Sprintf("postgresql://%s:%s@%s:%d/%s", config.User, config.Password, config.Host, config.Port, config.Name),
-	))
-	return conn, err
-}
 
 func run() error {
 
@@ -28,9 +21,19 @@ func run() error {
 		return fmt.Errorf("could not initialize config: %w", err)
 	}
 	fmt.Printf("config: %+v\n", c)
+	ctx := context.Background()
+	db, err := postgres.Connect(c.Database)
 
-	db, err := connect(c.Database)
+	if err != nil {
+		return fmt.Errorf("could not connect to db: %w", err)
+	}
 
+	mdb, err := mongo.Connect(ctx, c.MongoDatabase)
+	defer func() {
+		if err = mdb.Disconnect(ctx); err != nil {
+			panic(err)
+		}
+	}()
 	if err != nil {
 		return fmt.Errorf("could not connect to db: %w", err)
 	}
@@ -47,7 +50,7 @@ func run() error {
 		return fmt.Errorf("could not start uploads listener: %w", err)
 	}
 
-	engine, err := router.NewRouter(db, storage, c)
+	engine, err := router.NewRouter(db, mdb, storage, c)
 	if err != nil {
 		return fmt.Errorf("could not initialize router: %w", err)
 	}

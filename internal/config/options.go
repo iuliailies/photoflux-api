@@ -22,6 +22,21 @@ func databaseOptions() []cfg.ConfigOption {
 	}
 }
 
+func mongoDatabaseOptions() []cfg.ConfigOption {
+	return []cfg.ConfigOption{
+		{FlagName: "mongo-db-name", Shorthand: "", Value: "photoflux", ConfigKey: "mongodatabase.name",
+			Usage: "Specifies the name of the ports database."},
+		{FlagName: "mongo-db-host", Shorthand: "", Value: "localhost", ConfigKey: "mongodatabase.host",
+			Usage: "Specifies the address on which the ports database listens for connections."},
+		{FlagName: "mongo-db-port", Shorthand: "", Value: int32(27017), ConfigKey: "mongodatabase.port",
+			Usage: "Specifies the port on which the ports database listens for connections."},
+		{FlagName: "mongo-db-user", Shorthand: "", Value: "root", ConfigKey: "mongodatabase.user",
+			Usage: "Specifies the user which connects to the ports database."},
+		{FlagName: "mongo-db-password", Shorthand: "", Value: "example", ConfigKey: "mongodatabase.password",
+			Usage: "Specifies the password of the user which connects to the ports database."},
+	}
+}
+
 func serverOptions() []cfg.ConfigOption {
 	return []cfg.ConfigOption{
 		{FlagName: "server-address", Shorthand: "", Value: "127.0.0.1", ConfigKey: "server.address",
@@ -79,6 +94,7 @@ func notificationOptions() []cfg.ConfigOption {
 func allOptions() []cfg.ConfigOption {
 	opts := make([]cfg.ConfigOption, 0)
 	opts = append(opts, databaseOptions()...)
+	opts = append(opts, mongoDatabaseOptions()...)
 	opts = append(opts, serverOptions()...)
 	opts = append(opts, storageOptions()...)
 	opts = append(opts, authOptions()...)

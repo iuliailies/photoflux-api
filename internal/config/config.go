@@ -5,6 +5,7 @@ import "time"
 type Config struct {
 	Server        Server
 	Database      Database
+	MongoDatabase MongoDatabase
 	ApiPaths      ApiPaths
 	Storage       Storage
 	Auth          Auth
@@ -12,6 +13,14 @@ type Config struct {
 }
 
 type Database struct {
+	Host     string
+	Port     int32
+	User     string
+	Name     string
+	Password string
+}
+
+type MongoDatabase struct {
 	Host     string
 	Port     int32
 	User     string

@@ -70,9 +70,9 @@ func (h *handler) HandleListMyPhoto(ctx *gin.Context) {
 		return
 	}
 
-	resp := public.ListPhotoResponse{
+	resp := public.ListMyPhotoResponse{
 		Data: make([]public.PhotoListItemData, 0, len(photos)),
-		Meta: public.PhotoListMeta{
+		Meta: public.MyPhotoListMeta{
 			NumberStars:  totalStars,
 			NumberPhotos: count,
 		},
@@ -83,7 +83,6 @@ func (h *handler) HandleListMyPhoto(ctx *gin.Context) {
 	for _, photo := range photos {
 		// TODO error handling
 		url, _ := h.storage.GetPresignedGet(ctx, "user-"+ah.User.String(), photo.Name, time.Minute)
-		fmt.Println("XXXXXXXXXXXXXX", photo, url)
 		resp.Data = append(resp.Data, PhotoToPublicListItem(photo, h.apiPaths, url))
 	}
 	ctx.JSON(http.StatusOK, &resp)
