@@ -83,7 +83,7 @@ func (h *handler) HandleListMyPhoto(ctx *gin.Context) {
 	for _, photo := range photos {
 		// TODO error handling
 		url, _ := h.storage.GetPresignedGet(ctx, "user-"+ah.User.String(), photo.Name, time.Minute)
-		resp.Data = append(resp.Data, PhotoToPublicListItem(photo, h.apiPaths, url))
+		resp.Data = append(resp.Data, PhotoToPublicListItem(photo, h.apiPaths, url, false))
 	}
 	ctx.JSON(http.StatusOK, &resp)
 }

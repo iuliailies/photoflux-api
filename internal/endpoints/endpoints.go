@@ -31,7 +31,7 @@ func RegisterCategories(router *gin.Engine, config config.Auth, h handlers.Categ
 }
 
 func RegisterStars(router *gin.Engine, config config.Auth, h handlers.StarHandler) {
-	subrouter := router.Group("/api/stars")
+	subrouter := router.Group("/api/stars").Use(auth.BearerAuth(config.Secret))
 
 	subrouter.POST("/", h.HandleStarPhoto)
 	subrouter.GET("/", h.HandleIsPhotoStarred)

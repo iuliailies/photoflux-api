@@ -42,7 +42,6 @@ func (h *handler) HandleIsPhotoStarred(ctx *gin.Context) {
 	}
 
 	if len(star) == 1 {
-		// Star didn't exist, therefore we create it
 		isStar = true
 	}
 

@@ -9,10 +9,11 @@ import (
 	"github.com/iuliailies/photo-flux/internal/handlers/common"
 	model "github.com/iuliailies/photo-flux/internal/models"
 	public "github.com/iuliailies/photo-flux/pkg/photoflux"
+	"gorm.io/gorm/clause"
 )
 
 func (h *handler) HandleListPhoto(ctx *gin.Context) {
-	_, ok := common.GetAuthHeader(ctx)
+	ah, ok := common.GetAuthHeader(ctx)
 	if !ok {
 		return
 	}
@@ -88,9 +89,26 @@ func (h *handler) HandleListPhoto(ctx *gin.Context) {
 		},
 	}
 	for _, photo := range photos {
+		var star []model.Star
+		err = h.db.WithContext(ctx).Clauses(clause.Returning{}).Table("stars").
+			Where("photo_id = ?", photo.Id.String()).
+			Where("user_id = ?", ah.User).
+			Find(&star).
+			Error
+
+		if err != nil {
+			common.EmitError(ctx, ListPhotoError(
+				http.StatusInternalServerError,
+				fmt.Sprintf("Could not get star data: %s", err.Error())))
+			return
+		}
+
+		isStarredByUser := len(star) == 1
+
 		// TODO error handling
 		url, _ := h.storage.GetPresignedGet(ctx, "user-"+photo.UserId.String(), photo.Name, time.Minute)
-		resp.Data = append(resp.Data, PhotoToPublicListItem(photo, h.apiPaths, url))
+
+		resp.Data = append(resp.Data, PhotoToPublicListItem(photo, h.apiPaths, url, isStarredByUser))
 	}
 	ctx.JSON(http.StatusOK, &resp)
 }

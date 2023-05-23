@@ -73,7 +73,7 @@ func PhotoWithRelationshipToPublic(photo model.PhotoWithStars, apipath config.Ap
 	}
 }
 
-func PhotoToPublicListItem(photo model.PhotoWithStars, apipath config.ApiPaths, url string) public.PhotoListItemData {
+func PhotoToPublicListItem(photo model.PhotoWithStars, apipath config.ApiPaths, url string, starred bool) public.PhotoListItemData {
 	return public.PhotoListItemData{
 		ResourceID: public.ResourceID{
 			Id:   photo.Id.String(),
@@ -88,8 +88,9 @@ func PhotoToPublicListItem(photo model.PhotoWithStars, apipath config.ApiPaths, 
 			},
 		},
 		Meta: public.PhotoMeta{
-			NumberStars: photo.StarCount,
-			HRef:        url,
+			NumberStars:   photo.StarCount,
+			HRef:          url,
+			StarredByUser: starred,
 		},
 		Links: public.PhotoListItemLinks{
 			Self: fmt.Sprintf("%s/%s", apipath.Photos, photo.Id.String()),

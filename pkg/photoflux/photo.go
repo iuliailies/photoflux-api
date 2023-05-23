@@ -28,8 +28,9 @@ type PhotoAttributes struct {
 }
 
 type PhotoMeta struct {
-	NumberStars int64  `json:"number_stars"`
-	HRef        string `json:"href"`
+	NumberStars   int64  `json:"number_stars"`
+	HRef          string `json:"href"`
+	StarredByUser bool   `json:"starred_by_user"`
 }
 
 type PhotoListMeta struct {
