@@ -32,6 +32,7 @@ func (h *handler) HandleListMyPhoto(ctx *gin.Context) {
 	var filters = make(map[string]any)
 
 	filters["photos.user_id"] = ah.User
+	filters["photos.is_uploaded"] = true
 
 	var photos []model.PhotoWithStars
 	var count int64

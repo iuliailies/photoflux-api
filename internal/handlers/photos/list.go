@@ -45,6 +45,7 @@ func (h *handler) HandleListPhoto(ctx *gin.Context) {
 	if params.Category != nil {
 		filters["photo_categories.category_id"] = *params.Category
 	}
+	filters["photos.is_uploaded"] = true
 
 	var photos []model.PhotoWithStars
 

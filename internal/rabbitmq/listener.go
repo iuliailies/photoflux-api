@@ -10,6 +10,7 @@ import (
 	"github.com/minio/minio-go"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 const QNAME = "upload"
@@ -140,7 +141,7 @@ func (u UploadsListener) Start() error {
 			fmt.Println("bucket", bucket)
 			fmt.Println("file", file)
 
-			err = u.db.Model(&model.Photo{}).Where("id = ?", file).Update("is_uploaded", true).Error
+			err = u.db.Model(&model.Photo{}).Clauses(clause.Returning{Columns: []clause.Column{{Name: "id"}}}).Where("name = ?", file).Update("is_uploaded", true).Error
 
 			if err != nil {
 				// Since no ack is send, the event will be requeued at some point.s
