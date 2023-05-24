@@ -9,17 +9,27 @@ import (
 	"github.com/iuliailies/photo-flux/internal/handlers/common"
 	model "github.com/iuliailies/photo-flux/internal/models"
 	public "github.com/iuliailies/photo-flux/pkg/photoflux"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func (h *handler) HandleCreateBoard(ctx *gin.Context) {
-	ah, ok := common.GetAuthHeader(ctx)
+func (h *handler) HandleUpdateBoard(ctx *gin.Context) {
+	_, ok := common.GetAuthHeader(ctx)
 	if !ok {
 		return
 	}
 
-	var req public.CreateBoardRequest
-	err := ctx.ShouldBindJSON(&req)
+	id := ctx.Param("id")
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		common.EmitError(ctx, CreateBoardError(
+			http.StatusInternalServerError,
+			fmt.Sprintf("Could not bind query parameters: %s", err.Error())))
+		return
+	}
+
+	var req public.UpdateBoardRequest
+	err = ctx.ShouldBindJSON(&req)
 
 	if err != nil {
 		common.EmitError(ctx, CreateBoardError(
@@ -28,24 +38,26 @@ func (h *handler) HandleCreateBoard(ctx *gin.Context) {
 		return
 	}
 
+	filter := bson.D{{Key: "_id", Value: objID}}
+
 	collection := h.mongoDb.Database("photoflux").Collection("boards")
 	boardAttr := model.BoardAttr{
-		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-		UserId:    ah.User.String(),
 		Data:      req.Data,
 	}
-	res, err := collection.InsertOne(ctx, boardAttr)
+	update := bson.D{{Key: "$set", Value: boardAttr}}
+	_, err = collection.UpdateOne(ctx, filter, update)
 	if err != nil {
 		common.EmitError(ctx, CreateBoardError(
 			http.StatusInternalServerError,
-			fmt.Sprintf("Could not create board: %s", err.Error())))
+			fmt.Sprintf("Could not update board: %s", err.Error())))
 		return
 	}
 
 	board := model.Board{
-		Id:        res.InsertedID.(primitive.ObjectID),
+		Id:        objID,
 		BoardAttr: boardAttr,
+		// TODO: inaccurate created at
 	}
 
 	resp := public.CreateBoardResponse{

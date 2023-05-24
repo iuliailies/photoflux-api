@@ -17,6 +17,14 @@ type CreateBoardResponse struct {
 	Data BoardData `json:"data"`
 }
 
+type UpdateBoardRequest struct {
+	Data string `json:"data"`
+}
+
+type UpdateBoardResponse struct {
+	Data BoardData `json:"data"`
+}
+
 type GetBoardRequest struct {
 }
 

@@ -36,4 +36,5 @@ type BoardHandler interface {
 	HandleListBoard(ctx *gin.Context)
 	HandleGetBoard(ctx *gin.Context)
 	HandleCreateBoard(ctx *gin.Context)
+	HandleUpdateBoard(ctx *gin.Context)
 }

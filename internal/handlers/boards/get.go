@@ -5,11 +5,11 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/iuliailies/photo-flux/internal/handlers/common"
 	model "github.com/iuliailies/photo-flux/internal/models"
 	public "github.com/iuliailies/photo-flux/pkg/photoflux"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func (h *handler) HandleGetBoard(ctx *gin.Context) {
@@ -19,7 +19,13 @@ func (h *handler) HandleGetBoard(ctx *gin.Context) {
 	}
 
 	id := ctx.Param("id")
-	uuid, err := uuid.Parse(id)
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		common.EmitError(ctx, CreateBoardError(
+			http.StatusInternalServerError,
+			fmt.Sprintf("Could not bind query parameters: %s", err.Error())))
+		return
+	}
 
 	if err != nil {
 		common.EmitError(ctx, GetBoardError(
@@ -29,7 +35,7 @@ func (h *handler) HandleGetBoard(ctx *gin.Context) {
 	}
 
 	collection := h.mongoDb.Database("photoflux").Collection("boards")
-	filter := bson.D{{Key: "id", Value: uuid}}
+	filter := bson.D{{Key: "_id", Value: objID}}
 	var board model.Board
 	err = collection.FindOne(ctx, filter).Decode((&board))
 	if err != nil {

@@ -9,7 +9,7 @@ import (
 func BoardToItem(board model.Board, apipath config.ApiPaths) public.BoardData {
 	return public.BoardData{
 		ResourceID: public.ResourceID{
-			Id:   board.Id.String(),
+			Id:   board.Id.Hex(),
 			Type: public.BoardType,
 		},
 		UserId: board.UserId,

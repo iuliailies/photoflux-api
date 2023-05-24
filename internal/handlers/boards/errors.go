@@ -12,6 +12,14 @@ func CreateBoardError(status int, detail string) public.Error {
 	}
 }
 
+func UpdateBoardError(status int, detail string) public.Error {
+	return public.Error{
+		Title:  "Update Board Failed",
+		Status: status,
+		Detail: detail,
+	}
+}
+
 func ListBoardError(status int, detail string) public.Error {
 	return public.Error{
 		Title:  "List Board Failed",

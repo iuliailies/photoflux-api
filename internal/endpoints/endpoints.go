@@ -55,4 +55,5 @@ func RegisterBoards(router *gin.Engine, config config.Auth, h handlers.BoardHand
 	subrouter.GET("/", h.HandleListBoard)
 	subrouter.GET("/:id", h.HandleGetBoard)
 	subrouter.POST("/", h.HandleCreateBoard)
+	subrouter.PATCH("/:id", h.HandleUpdateBoard)
 }
