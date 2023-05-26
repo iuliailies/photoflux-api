@@ -22,7 +22,7 @@ type UpdateBoardRequest struct {
 }
 
 type UpdateBoardResponse struct {
-	Data BoardData `json:"data"`
+	Data string `json:"data"`
 }
 
 type GetBoardRequest struct {

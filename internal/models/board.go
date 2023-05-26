@@ -8,15 +8,23 @@ import (
 )
 
 type BoardAttr struct {
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	UserId    string
+	CreatedAt time.Time `bson:"created_at"`
+	UpdatedAt time.Time `bson:"updated_at"`
+	UserId    string    `bson:"user_id"`
 	Data      string
 }
 
 type Board struct {
-	Id primitive.ObjectID
-	BoardAttr
+	Id        primitive.ObjectID `bson:"_id"`
+	CreatedAt time.Time          `bson:"created_at"`
+	UpdatedAt time.Time          `bson:"updated_at"`
+	UserId    string             `bson:"user_id"`
+	Data      string
+}
+
+type BoardUpdateAttr struct {
+	UpdatedAt time.Time `bson:"updated_at"`
+	Data      string
 }
 
 // printInfo prints an entity in a simpler format.

@@ -44,8 +44,12 @@ func (h *handler) HandleCreateBoard(ctx *gin.Context) {
 	}
 
 	board := model.Board{
-		Id:        res.InsertedID.(primitive.ObjectID),
-		BoardAttr: boardAttr,
+		Id: res.InsertedID.(primitive.ObjectID),
+		// ??????
+		CreatedAt: boardAttr.CreatedAt,
+		UpdatedAt: boardAttr.UpdatedAt,
+		UserId:    ah.User.String(),
+		Data:      req.Data,
 	}
 
 	resp := public.CreateBoardResponse{

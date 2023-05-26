@@ -41,7 +41,7 @@ func (h *handler) HandleUpdateBoard(ctx *gin.Context) {
 	filter := bson.D{{Key: "_id", Value: objID}}
 
 	collection := h.mongoDb.Database("photoflux").Collection("boards")
-	boardAttr := model.BoardAttr{
+	boardAttr := model.BoardUpdateAttr{
 		UpdatedAt: time.Now(),
 		Data:      req.Data,
 	}
@@ -54,14 +54,9 @@ func (h *handler) HandleUpdateBoard(ctx *gin.Context) {
 		return
 	}
 
-	board := model.Board{
-		Id:        objID,
-		BoardAttr: boardAttr,
-		// TODO: inaccurate created at
-	}
-
-	resp := public.CreateBoardResponse{
-		Data: BoardToItem(board, h.apiPaths),
+	// TODO: return whole object
+	resp := public.UpdateBoardResponse{
+		Data: req.Data,
 	}
 
 	ctx.JSON(http.StatusOK, &resp)
