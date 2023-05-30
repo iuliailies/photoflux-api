@@ -70,7 +70,7 @@ func (h *handler) HandleListPhoto(ctx *gin.Context) {
 	if params.Category != nil {
 		filters["photo_categories.category_id"] = *params.Category
 	}
-	filters["photos.is_uploaded"] = true
+	// filters["photos.is_uploaded"] = true // TODO: recheck bug
 
 	var photos []model.PhotoWithStars
 
@@ -105,7 +105,7 @@ func (h *handler) HandleListPhoto(ctx *gin.Context) {
 			CategoryName: category.Name,
 		},
 		Links: public.ListPhotoLinks{
-			Next: model.BuildNextLink(nextarr, params.Limit),
+			Next: model.BuildNextLink(nextarr, "photos/", params.Limit),
 		},
 	}
 	for _, photo := range photos {

@@ -57,7 +57,7 @@ func (h *handler) HandleListMyPhoto(ctx *gin.Context) {
 	var filters = make(map[string]any)
 
 	filters["photos.user_id"] = ah.User
-	filters["photos.is_uploaded"] = true
+	// filters["photos.is_uploaded"] = true
 
 	var photos []model.PhotoWithStars
 
@@ -123,7 +123,7 @@ func (h *handler) HandleListMyPhoto(ctx *gin.Context) {
 			NumberPhotos: count,
 		},
 		Links: public.ListPhotoLinks{
-			Next: model.BuildNextLink(nextarr, params.Limit),
+			Next: model.BuildNextLink(nextarr, "photos/me/", params.Limit),
 		},
 	}
 	for _, photo := range photos {

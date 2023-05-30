@@ -54,7 +54,7 @@ func FromURLString(urlstr string) PhotoCursor {
 	return m
 }
 
-func BuildNextLink(arr []any, limit *int) string {
+func BuildNextLink(arr []any, preString string, limit *int) string {
 	if len(arr) == 0 {
 		return ""
 	}
@@ -63,7 +63,7 @@ func BuildNextLink(arr []any, limit *int) string {
 		CreatedAt: arr[0].(time.Time),
 	}
 	str := cursor.toURLString()
-	link := fmt.Sprintf("photos/me/?after=%s", str)
+	link := fmt.Sprintf("%s?after=%s", preString, str)
 	if limit != nil {
 		link = link + fmt.Sprintf("\u0026limit=%d", *limit)
 	}
