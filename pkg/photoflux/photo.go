@@ -83,14 +83,16 @@ type UpdatePhotoResponse struct {
 type ListPhotoParams struct {
 	Category *string `form:"category,omitempty" binding:"required"`
 	Sort     *string `form:"sort,omitempty"`
+	PaginationParams
 }
 
 type ListMyPhotoParams struct {
+	PaginationParams
 }
 
 // Returns an entries link to reveal other possible state transitions.
 type ListPhotoLinks struct {
-	Self string `json:"self"`
+	Next string `json:"next"`
 	//TODO entries
 }
 

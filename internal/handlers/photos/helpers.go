@@ -80,7 +80,7 @@ func PhotoToPublicListItem(photo model.PhotoWithStars, apipath config.ApiPaths, 
 			Type: public.PhotoType,
 		},
 		Attributes: public.PhotoAttributes{
-			IsUploaded: false,
+			IsUploaded: photo.IsUploaded,
 			UserId:     photo.UserId,
 			Timestamps: public.Timestamps{
 				CreatedAt: photo.CreatedAt,

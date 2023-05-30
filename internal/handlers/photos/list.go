@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/iuliailies/photo-flux/internal/gorm"
 	"github.com/iuliailies/photo-flux/internal/handlers/common"
 	model "github.com/iuliailies/photo-flux/internal/models"
 	public "github.com/iuliailies/photo-flux/pkg/photoflux"
@@ -18,6 +19,17 @@ func (h *handler) HandleListPhoto(ctx *gin.Context) {
 		return
 	}
 
+	cols := []gorm.OrderedColumn{
+		{
+			Column: "created_at",
+			Order:  gorm.OrderDESC,
+		},
+		{
+			Column: "id",
+			Order:  gorm.OrderASC,
+		},
+	}
+
 	var params public.ListPhotoParams
 	err := ctx.ShouldBindQuery(&params)
 
@@ -26,6 +38,19 @@ func (h *handler) HandleListPhoto(ctx *gin.Context) {
 			http.StatusBadRequest,
 			fmt.Sprintf("Could not bind query params: %s", err.Error())))
 		return
+	}
+
+	var afterarr []any = nil
+
+	if params.After != nil {
+		var photoCursor model.PhotoCursor = model.FromURLString(*params.After)
+		afterarr = []any{photoCursor.CreatedAt, photoCursor.Id}
+	}
+
+	limit := -1
+
+	if params.Limit != nil {
+		limit = *params.Limit
 	}
 
 	var category model.Category
@@ -54,29 +79,23 @@ func (h *handler) HandleListPhoto(ctx *gin.Context) {
 		Joins("LEFT JOIN stars ON stars.photo_id = photos.id").
 		Where(filters).
 		Group("photos.id").
-		Select("photos.id, photos.user_id, photos.name, photos.is_uploaded, photos.created_at, photos.updated_at, COUNT(stars.user_id) AS star_count").
-		Scan(&photos)
+		Select("photos.id, photos.user_id, photos.name, photos.is_uploaded, photos.created_at, photos.updated_at, COUNT(stars.user_id) AS star_count")
 
-	if params.Sort != nil {
-		fmt.Println("inside params sort", *params.Sort)
-		var orderString string
-		if *params.Sort == "created_at" {
-			orderString = "created_at DESC"
-		} else if *params.Sort == "star" {
-			orderString = "star_count DESC"
-		} else {
-			common.EmitError(ctx, ListPhotoError(
-				http.StatusBadRequest,
-				`Could not list photos: "sort" query parameter should be either "star" or "created_at".`))
-			return
-		}
-		selection = selection.Order(orderString).Scan(&photos)
-	}
+	photos, _, nextarr, errarr := gorm.ListMultiColumn(
+		selection,
+		"photos",
+		limit,
+		cols,
+		model.RetrieveCursorArr,
+		nil,
+		afterarr,
+		gorm.OrderASC,
+	)
 
-	if selection.Error != nil {
+	if errarr != nil {
 		common.EmitError(ctx, ListPhotoError(
 			http.StatusInternalServerError,
-			fmt.Sprintf("Could not list photos: %s", selection.Error.Error())))
+			fmt.Sprintf("Could not list photos: %s", err.Error())))
 		return
 	}
 
@@ -86,7 +105,7 @@ func (h *handler) HandleListPhoto(ctx *gin.Context) {
 			CategoryName: category.Name,
 		},
 		Links: public.ListPhotoLinks{
-			Self: h.apiPaths.Photos + "/",
+			Next: model.BuildNextLink(nextarr, params.Limit),
 		},
 	}
 	for _, photo := range photos {

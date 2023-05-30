@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/iuliailies/photo-flux/internal/gorm"
 	"github.com/iuliailies/photo-flux/internal/handlers/common"
 	model "github.com/iuliailies/photo-flux/internal/models"
 	public "github.com/iuliailies/photo-flux/pkg/photoflux"
@@ -15,6 +16,17 @@ func (h *handler) HandleListMyPhoto(ctx *gin.Context) {
 	ah, ok := common.GetAuthHeader(ctx)
 	if !ok {
 		return
+	}
+
+	cols := []gorm.OrderedColumn{
+		{
+			Column: "created_at",
+			Order:  gorm.OrderDESC,
+		},
+		{
+			Column: "id",
+			Order:  gorm.OrderASC,
+		},
 	}
 
 	var params public.ListMyPhotoParams
@@ -27,6 +39,19 @@ func (h *handler) HandleListMyPhoto(ctx *gin.Context) {
 		return
 	}
 
+	var afterarr []any = nil
+
+	if params.After != nil {
+		var photoCursor model.PhotoCursor = model.FromURLString(*params.After)
+		afterarr = []any{photoCursor.CreatedAt, photoCursor.Id}
+	}
+
+	limit := -1
+
+	if params.Limit != nil {
+		limit = *params.Limit
+	}
+
 	// This is needed to query using zero values as well, see
 	// https://gorm.io/docs/query.html#Struct-amp-Map-Conditions
 	var filters = make(map[string]any)
@@ -35,20 +60,25 @@ func (h *handler) HandleListMyPhoto(ctx *gin.Context) {
 	filters["photos.is_uploaded"] = true
 
 	var photos []model.PhotoWithStars
-	var count int64
 
-	err = h.db.Debug().Table("photos").
-		Joins("JOIN photo_categories ON photo_categories.photo_id = photos.id").
+	tdb := h.db.Debug().Table("photos").
 		Joins("LEFT JOIN stars ON stars.photo_id = photos.id").
 		Where(filters).
 		Group("photos.id").
-		Select("photos.id, photos.user_id, photos.name, photos.is_uploaded, photos.created_at, photos.updated_at, COUNT(stars.user_id) AS star_count").
-		Order("created_at DESC").
-		Scan(&photos).
-		Count(&count).
-		Error
+		Select("photos.id, photos.user_id, photos.name, photos.is_uploaded, photos.created_at, photos.updated_at, COUNT(stars.user_id) AS star_count")
 
-	if err != nil {
+	photos, _, nextarr, errarr := gorm.ListMultiColumn(
+		tdb,
+		"photos",
+		limit,
+		cols,
+		model.RetrieveCursorArr,
+		nil,
+		afterarr,
+		gorm.OrderASC,
+	)
+
+	if errarr != nil {
 		common.EmitError(ctx, ListPhotoError(
 			http.StatusInternalServerError,
 			fmt.Sprintf("Could not list user photos: %s", err.Error())))
@@ -67,7 +97,22 @@ func (h *handler) HandleListMyPhoto(ctx *gin.Context) {
 	if err != nil {
 		common.EmitError(ctx, ListPhotoError(
 			http.StatusInternalServerError,
-			fmt.Sprintf("Could not get total star count of user: %s", err.Error())))
+			fmt.Sprintf("Could not get total star count for user: %s", err.Error())))
+		return
+	}
+
+	var count int64
+	err = h.db.Debug().
+		Table("photos").
+		Select("COUNT(*) as total_photos").
+		Where("photos.user_id = ?", ah.User).
+		Scan(&count).
+		Error
+
+	if err != nil {
+		common.EmitError(ctx, ListPhotoError(
+			http.StatusInternalServerError,
+			fmt.Sprintf("Could not get total photo number for user: %s", err.Error())))
 		return
 	}
 
@@ -78,7 +123,7 @@ func (h *handler) HandleListMyPhoto(ctx *gin.Context) {
 			NumberPhotos: count,
 		},
 		Links: public.ListPhotoLinks{
-			Self: h.apiPaths.Photos + "/",
+			Next: model.BuildNextLink(nextarr, params.Limit),
 		},
 	}
 	for _, photo := range photos {

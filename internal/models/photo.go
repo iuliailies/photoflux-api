@@ -2,6 +2,9 @@ package model
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
+	"time"
 
 	uuid "github.com/google/uuid"
 	"gorm.io/gorm"
@@ -16,6 +19,11 @@ type Photo struct {
 	Users      []User     `gorm:"many2many:stars;"`
 }
 
+type PhotoCursor struct {
+	Id        uuid.UUID
+	CreatedAt time.Time
+}
+
 type PhotoWithStars struct {
 	Photo
 	StarCount int64
@@ -23,6 +31,43 @@ type PhotoWithStars struct {
 
 func (p *Photo) PrintInfo() {
 	fmt.Printf("UUID: %s\t UPLOAD_TIME: %s\t IS_UPLOADED: %t\n", p.Id, p.CreatedAt, p.IsUploaded)
+}
+
+func RetrieveCursorArr(p *PhotoWithStars) []any {
+	return []any{p.CreatedAt, p.Id}
+}
+
+func (m PhotoCursor) toURLString() string {
+	return strings.Join([]string{m.Id.String(), strconv.FormatInt(m.CreatedAt.UnixNano(), 10)}, ".")
+}
+
+func FromURLString(urlstr string) PhotoCursor {
+	values := strings.Split(urlstr, ".")
+
+	tm, _ := strconv.ParseInt(values[1], 10, 64)
+
+	m := PhotoCursor{
+		Id:        uuid.MustParse(values[0]), //TODO: error handling
+		CreatedAt: time.Unix(0, tm),
+	}
+
+	return m
+}
+
+func BuildNextLink(arr []any, limit *int) string {
+	if len(arr) == 0 {
+		return ""
+	}
+	var cursor PhotoCursor = PhotoCursor{
+		Id:        arr[1].(uuid.UUID),
+		CreatedAt: arr[0].(time.Time),
+	}
+	str := cursor.toURLString()
+	link := fmt.Sprintf("photos/me/?after=%s", str)
+	if limit != nil {
+		link = link + fmt.Sprintf("\u0026limit=%d", *limit)
+	}
+	return link
 }
 
 // AfterUpdate is a gorm hook that adds an error if the entry was not found
