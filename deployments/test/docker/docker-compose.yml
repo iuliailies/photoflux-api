@@ -58,8 +58,6 @@ services:
     volumes:
       - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq
       - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
-      # What a motherfucking mistake man..... keeping it to remember how dumb
-      # I was
       # - ../rabbitmq:/etc/rabbitmq:ro
       - ../rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
       - ../rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
@@ -114,8 +112,7 @@ services:
       - policy
 
   # minio initialization steps. Uses the minio client binary to
-  # - create the user policy. This is because minio is fucking retarded
-  # and doesn't have a way to init policies.
+  # - create the user policy
   minioinit:
     image: minio/mc
     depends_on:

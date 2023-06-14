@@ -19,17 +19,6 @@ func (h *handler) HandleListPhoto(ctx *gin.Context) {
 		return
 	}
 
-	cols := []gorm.OrderedColumn{
-		{
-			Column: "created_at",
-			Order:  gorm.OrderDESC,
-		},
-		{
-			Column: "id",
-			Order:  gorm.OrderASC,
-		},
-	}
-
 	var params public.ListPhotoParams
 	err := ctx.ShouldBindQuery(&params)
 
@@ -61,6 +50,29 @@ func (h *handler) HandleListPhoto(ctx *gin.Context) {
 			http.StatusInternalServerError,
 			fmt.Sprintf("Could not list photos. Invalid category: %s", err.Error())))
 		return
+	}
+
+	sortCriteria := "created_at"
+	if params.Sort != nil {
+		if *params.Sort == "star" {
+			sortCriteria = "star_count"
+		} else if *params.Sort != "created_at" {
+			common.EmitError(ctx, ListPhotoError(
+				http.StatusInternalServerError,
+				fmt.Sprintf("Could not list photos. The `sort` parameter should either be `star` or `created_at`.")))
+			return
+		}
+	}
+
+	cols := []gorm.OrderedColumn{
+		{
+			Column: sortCriteria,
+			Order:  gorm.OrderDESC,
+		},
+		{
+			Column: "id",
+			Order:  gorm.OrderASC,
+		},
 	}
 
 	// This is needed to query using zero values as well, see
@@ -105,7 +117,7 @@ func (h *handler) HandleListPhoto(ctx *gin.Context) {
 			CategoryName: category.Name,
 		},
 		Links: public.ListPhotoLinks{
-			Next: model.BuildNextLink(nextarr, "photos/", params.Limit),
+			Next: model.BuildNextLink(nextarr, "photos/", params.Limit, params.Category),
 		},
 	}
 	for _, photo := range photos {

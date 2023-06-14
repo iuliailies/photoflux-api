@@ -82,7 +82,9 @@ type UpdatePhotoResponse struct {
 
 type ListPhotoParams struct {
 	Category *string `form:"category,omitempty" binding:"required"`
-	Sort     *string `form:"sort,omitempty"`
+	// if specified, sort parameter should be either "star" or "created_at"
+	// default to "created_at" if unspecified
+	Sort *string `form:"sort,omitempty"`
 	PaginationParams
 }
 

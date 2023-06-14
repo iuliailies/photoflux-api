@@ -123,7 +123,7 @@ func (h *handler) HandleListMyPhoto(ctx *gin.Context) {
 			NumberPhotos: count,
 		},
 		Links: public.ListPhotoLinks{
-			Next: model.BuildNextLink(nextarr, "photos/me/", params.Limit),
+			Next: model.BuildNextLink(nextarr, "photos/me/", params.Limit, nil),
 		},
 	}
 	for _, photo := range photos {

@@ -54,7 +54,7 @@ func FromURLString(urlstr string) PhotoCursor {
 	return m
 }
 
-func BuildNextLink(arr []any, preString string, limit *int) string {
+func BuildNextLink(arr []any, preString string, limit *int, category *string) string {
 	if len(arr) == 0 {
 		return ""
 	}
@@ -66,6 +66,9 @@ func BuildNextLink(arr []any, preString string, limit *int) string {
 	link := fmt.Sprintf("%s?after=%s", preString, str)
 	if limit != nil {
 		link = link + fmt.Sprintf("\u0026limit=%d", *limit)
+	}
+	if category != nil {
+		link = link + fmt.Sprintf("\u0026category=%s", *category)
 	}
 	return link
 }
