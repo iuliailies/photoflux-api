@@ -34,7 +34,7 @@ type PhotoMeta struct {
 }
 
 type PhotoListMeta struct {
-	CategoryName string `json:"category_name"`
+	CategoryName []string `json:"category_name"`
 }
 
 type MyPhotoListMeta struct {
@@ -83,7 +83,7 @@ type UpdatePhotoResponse struct {
 type ListPhotoParams struct {
 	Category *string `form:"category,omitempty" binding:"required"`
 	// if specified, sort parameter should be either "star" or "created_at"
-	// default to "created_at" if unspecified
+	// defaults to "created_at" if unspecified
 	Sort *string `form:"sort,omitempty"`
 	PaginationParams
 }

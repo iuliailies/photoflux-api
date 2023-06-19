@@ -1,5 +1,7 @@
 package photoflux
 
+import "strings"
+
 const CategoryType = "category"
 
 type CategoryData struct {
@@ -36,4 +38,8 @@ type CategoryLinks struct {
 
 type CategoryListItemLinks struct {
 	Self string `json:"self"`
+}
+
+func CategoriesFromURL(urlSnippet string) []string {
+	return strings.Split(urlSnippet, ".")
 }

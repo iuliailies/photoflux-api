@@ -42,14 +42,20 @@ func (h *handler) HandleListPhoto(ctx *gin.Context) {
 		limit = *params.Limit
 	}
 
-	var category model.Category
-	err = h.db.WithContext(ctx).Where("id = ?", *params.Category).Take(&category).Error
+	categoryIds := public.CategoriesFromURL(*params.Category)
+	var categories []model.Category
+	err = h.db.WithContext(ctx).Where("id IN (?)", categoryIds).Find(&categories).Error
 
 	if err != nil {
 		common.EmitError(ctx, ListPhotoError(
 			http.StatusInternalServerError,
 			fmt.Sprintf("Could not list photos. Invalid category: %s", err.Error())))
 		return
+	}
+
+	names := make([]string, len(categories))
+	for i, category := range categories {
+		names[i] = category.Name
 	}
 
 	sortCriteria := "created_at"
@@ -75,22 +81,14 @@ func (h *handler) HandleListPhoto(ctx *gin.Context) {
 		},
 	}
 
-	// This is needed to query using zero values as well, see
-	// https://gorm.io/docs/query.html#Struct-amp-Map-Conditions
-	var filters = make(map[string]any)
-
-	if params.Category != nil {
-		filters["photo_categories.category_id"] = *params.Category
-	}
-	// filters["photos.is_uploaded"] = true // TODO: recheck bug
-
 	var photos []model.PhotoWithStars
 
 	selection := h.db.Debug().Table("photos").
 		Joins("JOIN photo_categories ON photo_categories.photo_id = photos.id").
 		Joins("LEFT JOIN stars ON stars.photo_id = photos.id").
-		Where(filters).
+		Where("photo_categories.category_id IN (?)", categoryIds).
 		Group("photos.id").
+		Having("COUNT(DISTINCT photo_categories.category_id) >= ?", len(categoryIds)-1).
 		Select("photos.id, photos.user_id, photos.name, photos.is_uploaded, photos.created_at, photos.updated_at, COUNT(stars.user_id) AS star_count")
 
 	photos, _, nextarr, errarr := gorm.ListMultiColumn(
@@ -114,7 +112,7 @@ func (h *handler) HandleListPhoto(ctx *gin.Context) {
 	resp := public.ListPhotoResponse{
 		Data: make([]public.PhotoListItemData, 0, len(photos)),
 		Meta: public.PhotoListMeta{
-			CategoryName: category.Name,
+			CategoryName: names,
 		},
 		Links: public.ListPhotoLinks{
 			Next: model.BuildNextLink(nextarr, "photos/", params.Limit, params.Category),
