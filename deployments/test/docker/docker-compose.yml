@@ -24,6 +24,7 @@ services:
     # db network is used for the communication between the db and the app
     networks:
       - db
+      - photoflux
 
   # photoflux:
 
@@ -63,9 +64,10 @@ services:
       - ../rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
     networks:
       - events
+      - photoflux
 
   minio:
-    image: quay.io/minio/minio
+    image: quay.io/minio/minio:RELEASE.2023-04-13T03-08-07Z
     command: server --console-address ":9090" /data
     depends_on:
       - rabbitmq
@@ -76,7 +78,7 @@ services:
 
     # Used to identify the container in the policy network in order to
     # initialize the policy
-    # hostname: minio
+    hostname: minio
 
     environment:
       MINIO_ROOT_USER: hello
@@ -103,18 +105,19 @@ services:
       MINIO_NOTIFY_AMQP_COMMENT_PRIMARY: "let's see if it works"
       MINIO_IDENTITY_PLUGIN_URL: "http://minio:8033/api/auth/minio"
       # enable STS
-      # MINIO_IDENTITY_PLUGIN_ROLE_POLICY: "userpolicy"
-      # MINIO_IDENTITY_PLUGIN_ROLE_ID: "abcd"
+      MINIO_IDENTITY_PLUGIN_ROLE_POLICY: "userpolicy"
+      MINIO_IDENTITY_PLUGIN_ROLE_ID: "abcd"
     volumes:
       - ../../../mnt/data:/data
     networks:
       - events
       - policy
+      - photoflux
 
   # minio initialization steps. Uses the minio client binary to
   # - create the user policy
   minioinit:
-    image: minio/mc
+    image: minio/mc:RELEASE.2023-04-12T02-21-51Z
     depends_on:
       - minio
     volumes:
@@ -124,6 +127,7 @@ services:
        exit 0;"
     networks:
       - policy
+      - photoflux
 
   mongo:
     image: mongo
@@ -142,7 +146,6 @@ services:
       ME_CONFIG_MONGODB_ADMINPASSWORD: example
       ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
 
-
 networks:
   events:
     driver: bridge
@@ -151,3 +154,4 @@ networks:
   # This network is used to initialize minio container configurations such as
   # user policy.
   policy:
+  photoflux:
