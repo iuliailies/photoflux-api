@@ -73,7 +73,7 @@ func (h *handler) HandleGetPhoto(ctx *gin.Context) {
 	}
 
 	resp := public.GetPhotoResponse{
-		Data: PhotoWithRelationshipToPublic(photoWithStar, h.apiPaths, categoryIds, url),
+		Data: PhotoWithRelationshipToPublic(photoWithStar, h.apiPaths, categoryIds, url, "todo"),
 	}
 
 	ctx.JSON(http.StatusOK, &resp)

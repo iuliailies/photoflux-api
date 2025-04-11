@@ -57,7 +57,7 @@ func (h *handler) HandleListMyPhoto(ctx *gin.Context) {
 	var filters = make(map[string]any)
 
 	filters["photos.user_id"] = ah.User
-	// filters["photos.is_uploaded"] = true
+	filters["photos.is_uploaded"] = true
 
 	var photos []model.PhotoWithStars
 
@@ -127,9 +127,15 @@ func (h *handler) HandleListMyPhoto(ctx *gin.Context) {
 		},
 	}
 	for _, photo := range photos {
+
+		if photo.Name[:9] == "thumbnail" {
+			continue
+		}
+
 		// TODO error handling
 		url, _ := h.storage.GetPresignedGet(ctx, "user-"+ah.User.String(), photo.Name, time.Minute)
-		resp.Data = append(resp.Data, PhotoToPublicListItem(photo, h.apiPaths, url, false))
+		url_thumbnail, _ := h.storage.GetPresignedGet(ctx, "user-"+ah.User.String(), "thumbnail"+photo.Name, time.Minute)
+		resp.Data = append(resp.Data, PhotoToPublicListItem(photo, h.apiPaths, url, url_thumbnail, false))
 	}
 	ctx.JSON(http.StatusOK, &resp)
 }

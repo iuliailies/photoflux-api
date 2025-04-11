@@ -86,7 +86,7 @@ func (h *handler) HandleListPhoto(ctx *gin.Context) {
 	selection := h.db.Debug().Table("photos").
 		Joins("JOIN photo_categories ON photo_categories.photo_id = photos.id").
 		Joins("LEFT JOIN stars ON stars.photo_id = photos.id").
-		Where("photo_categories.category_id IN (?)", categoryIds).
+		Where("photo_categories.category_id IN (?) AND photos.is_uploaded = 'true'", categoryIds).
 		Group("photos.id").
 		Having("COUNT(DISTINCT photo_categories.category_id) >= ?", len(categoryIds)-1).
 		Select("photos.id, photos.user_id, photos.name, photos.is_uploaded, photos.created_at, photos.updated_at, COUNT(stars.user_id) AS star_count")
@@ -119,6 +119,11 @@ func (h *handler) HandleListPhoto(ctx *gin.Context) {
 		},
 	}
 	for _, photo := range photos {
+
+		if photo.Name[:9] == "thumbnail" {
+			continue
+		}
+
 		var star []model.Star
 		err = h.db.WithContext(ctx).Clauses(clause.Returning{}).Table("stars").
 			Where("photo_id = ?", photo.Id.String()).
@@ -136,9 +141,10 @@ func (h *handler) HandleListPhoto(ctx *gin.Context) {
 		isStarredByUser := len(star) == 1
 
 		// TODO error handling
-		url, _ := h.storage.GetPresignedGet(ctx, "user-"+photo.UserId.String(), photo.Name, time.Minute)
+		url_photo, _ := h.storage.GetPresignedGet(ctx, "user-"+photo.UserId.String(), photo.Name, time.Minute)
+		url_thumbnail, _ := h.storage.GetPresignedGet(ctx, "user-"+photo.UserId.String(), "thumbnail"+photo.Name, time.Minute)
 
-		resp.Data = append(resp.Data, PhotoToPublicListItem(photo, h.apiPaths, url, isStarredByUser))
+		resp.Data = append(resp.Data, PhotoToPublicListItem(photo, h.apiPaths, url_photo, url_thumbnail, isStarredByUser))
 	}
 	ctx.JSON(http.StatusOK, &resp)
 }

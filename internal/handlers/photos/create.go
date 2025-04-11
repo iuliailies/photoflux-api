@@ -57,6 +57,11 @@ func (h *handler) HandleCreatePhoto(ctx *gin.Context) {
 		Name:   objectName,
 	}
 
+	objectNameThumbnail := "thumbnail" + objectName
+	Thumbnail := Photo
+	Thumbnail.Name = objectNameThumbnail
+
+	// ignore thumbnail cause 1 validationis fine
 	v := validator.New()
 	err = v.Struct(Photo)
 	if err != nil {
@@ -74,13 +79,28 @@ func (h *handler) HandleCreatePhoto(ctx *gin.Context) {
 		return
 	}
 
+	err = h.db.WithContext(ctx).Clauses(clause.Returning{}).Create(&Thumbnail).Error
+	if err != nil {
+		common.EmitError(ctx, CreatePhotoError(
+			http.StatusInternalServerError,
+			fmt.Sprintf("Could not create thumbnail for photo: %s", err.Error())))
+		return
+	}
+
 	photoCategoryEntries := make([]*PhotoCategory, 0, len(req.CategoryIds))
 	for _, cId := range req.CategoryIds {
-		entry := PhotoCategory{
-			PhotoId:    uuid.UUID(Photo.Id),
-			CategoryId: uuid.UUID(cId),
+		entries := []*PhotoCategory{
+			{
+				PhotoId:    uuid.UUID(Photo.Id),
+				CategoryId: uuid.UUID(cId),
+			},
+			// add the thumbnail too for each category
+			{
+				PhotoId:    uuid.UUID(Thumbnail.Id),
+				CategoryId: uuid.UUID(cId),
+			},
 		}
-		photoCategoryEntries = append(photoCategoryEntries, &entry)
+		photoCategoryEntries = append(photoCategoryEntries, entries...)
 	}
 
 	err = h.db.WithContext(ctx).Clauses(clause.Returning{}).Table("photo_categories").Create(&photoCategoryEntries).Error
@@ -88,11 +108,19 @@ func (h *handler) HandleCreatePhoto(ctx *gin.Context) {
 	if err != nil {
 		common.EmitError(ctx, CreatePhotoError(
 			http.StatusInternalServerError,
-			fmt.Sprintf("Could not create Photo: %s", err.Error())))
+			fmt.Sprintf("Could not create photos and thumbnail associations with categories: %s", err.Error())))
 		return
 	}
 
-	url, err := h.storage.GetPresignedPut(ctx, "user-"+ah.User.String(), objectName, time.Minute)
+	url_photo, err := h.storage.GetPresignedPut(ctx, "user-"+ah.User.String(), objectName, time.Minute)
+	if err != nil {
+		common.EmitError(ctx, CreatePhotoError(
+			http.StatusInternalServerError,
+			fmt.Sprintf("Could not create Photo Href: %s", err.Error())))
+		return
+	}
+
+	url_thumbnail, err := h.storage.GetPresignedPut(ctx, "user-"+ah.User.String(), objectNameThumbnail, time.Minute)
 	if err != nil {
 		common.EmitError(ctx, CreatePhotoError(
 			http.StatusInternalServerError,
@@ -106,7 +134,7 @@ func (h *handler) HandleCreatePhoto(ctx *gin.Context) {
 	}
 
 	resp := public.CreatePhotoResponse{
-		Data: PhotoWithRelationshipToPublic(photoWithStar, h.apiPaths, req.CategoryIds, url),
+		Data: PhotoWithRelationshipToPublic(photoWithStar, h.apiPaths, req.CategoryIds, url_photo, url_thumbnail),
 	}
 
 	ctx.JSON(http.StatusCreated, &resp)

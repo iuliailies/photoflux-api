@@ -33,7 +33,7 @@ func PhotoToPublic(photo model.PhotoWithStars, apipath config.ApiPaths, url stri
 	}
 }
 
-func PhotoWithRelationshipToPublic(photo model.PhotoWithStars, apipath config.ApiPaths, categoryIds []uuid.UUID, url string) public.PhotoData {
+func PhotoWithRelationshipToPublic(photo model.PhotoWithStars, apipath config.ApiPaths, categoryIds []uuid.UUID, urlPhoto, urlThumbnail string) public.PhotoData {
 	photoCategoryEntries := make([]public.PhotoCategoryData, 0, len(categoryIds))
 	for _, cId := range categoryIds {
 		entry := public.PhotoCategoryData{
@@ -56,8 +56,9 @@ func PhotoWithRelationshipToPublic(photo model.PhotoWithStars, apipath config.Ap
 			},
 		},
 		Meta: public.PhotoMeta{
-			NumberStars: photo.StarCount,
-			HRef:        url,
+			NumberStars:   photo.StarCount,
+			HRef:          urlPhoto,
+			HRefThumbnail: urlThumbnail,
 		},
 		Links: public.PhotoLinks{
 			Self: fmt.Sprintf("%s/%s", apipath.Photos, photo.Id.String()),
@@ -73,7 +74,7 @@ func PhotoWithRelationshipToPublic(photo model.PhotoWithStars, apipath config.Ap
 	}
 }
 
-func PhotoToPublicListItem(photo model.PhotoWithStars, apipath config.ApiPaths, url string, starred bool) public.PhotoListItemData {
+func PhotoToPublicListItem(photo model.PhotoWithStars, apipath config.ApiPaths, url_photo, url_thumbnail string, starred bool) public.PhotoListItemData {
 	return public.PhotoListItemData{
 		ResourceID: public.ResourceID{
 			Id:   photo.Id.String(),
@@ -89,7 +90,8 @@ func PhotoToPublicListItem(photo model.PhotoWithStars, apipath config.ApiPaths, 
 		},
 		Meta: public.PhotoMeta{
 			NumberStars:   photo.StarCount,
-			HRef:          url,
+			HRef:          url_photo,
+			HRefThumbnail: url_thumbnail,
 			StarredByUser: starred,
 		},
 		Links: public.PhotoListItemLinks{

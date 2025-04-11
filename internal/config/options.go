@@ -52,7 +52,7 @@ func storageOptions() []cfg.ConfigOption {
 			Usage: "Access key of the admin minio client."},
 		{FlagName: "storage-secret-key", Shorthand: "", Value: "myfriend", ConfigKey: "storage.secretkey",
 			Usage: "Secret key of the admin minio client."},
-		{FlagName: "stoarge-minio-address", Shorthand: "", Value: "localhost", ConfigKey: "storage.minioaddress",
+		{FlagName: "stoarge-minio-address", Shorthand: "", Value: "192.168.0.108", ConfigKey: "storage.minioaddress",
 			Usage: "Address of the minio server."},
 		{FlagName: "storage-minio-port", Shorthand: "", Value: int32(9000), ConfigKey: "storage.minioport",
 			Usage: "Port of the minio server."},

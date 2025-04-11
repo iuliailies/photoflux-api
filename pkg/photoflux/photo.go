@@ -30,6 +30,7 @@ type PhotoAttributes struct {
 type PhotoMeta struct {
 	NumberStars   int64  `json:"number_stars"`
 	HRef          string `json:"href"`
+	HRefThumbnail string `json:"href_thumbnail"`
 	StarredByUser bool   `json:"starred_by_user"`
 }
 
@@ -84,7 +85,8 @@ type ListPhotoParams struct {
 	Category *string `form:"category,omitempty" binding:"required"`
 	// if specified, sort parameter should be either "star" or "created_at"
 	// defaults to "created_at" if unspecified
-	Sort *string `form:"sort,omitempty"`
+	Sort      *string `form:"sort,omitempty"`
+	Thumbnail *string `form:"thumbnail,omitempty"`
 	PaginationParams
 }
 
