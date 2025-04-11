@@ -130,7 +130,7 @@ services:
       - photoflux
 
   mongo:
-    image: mongo
+    image: mongo@sha256:d23ec07162ca06646a6329c452643f37494af644d045c002a7b41873981c160d
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
